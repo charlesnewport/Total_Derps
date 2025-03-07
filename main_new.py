@@ -4,7 +4,7 @@ from unit_new import Unit
 import pygame
 import json
 
-#boop123
+import platform
 
 width = 720
 height = 720
@@ -59,6 +59,10 @@ while True:
 	mouse_pos = pygame.mouse.get_pos()
 
 	#Update Manager
+	if platform.system() == "Linux":
+
+		mouse_buttons = [keys[pygame.K_LEFT], False, keys[pygame.K_RIGHT]]
+
 	manager.update(player_units, keys, mouse_buttons, mouse_pos)
 
 	#Display Manager

@@ -53,7 +53,7 @@ class Unit:
 
 		##ICON INFORMATION
 		self.colour = colour
-		self.image = colour_unit(cv2.imread(f"Images/{unit_class["unit_image"]}.png"), self.colour)
+		self.image = colour_unit(cv2.imread("Images/" + unit_class["unit_image"] + ".png"), self.colour)
 
 		##INTERACTION
 		self.highlight = False
