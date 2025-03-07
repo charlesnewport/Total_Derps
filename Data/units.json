@@ -1,0 +1,121 @@
+{
+	"archer": {
+
+		"unit_size": 48,
+
+		"has_missile": true,
+		"can_skirmish": true,
+
+		"melee": {
+				"melee_attack_skill": 7,
+				"charge_bonus": 2,
+				"effective_against_cavalry": false
+		},
+
+		"missile": {
+				"missile_attack": 6,
+				"range": 160 
+		},
+
+		//general_attack
+		"armour_piercing": true,
+
+
+		"defence": {
+				"defence_skill": 1,
+				"armour": 0,
+				"shield": 3,
+				"hit_points": 1
+		}
+
+	},
+
+	"spearman": {
+
+		"unit_size": 48,
+
+		"has_missile": false,
+		"can_skirmish": false,
+
+		"melee": {
+				"melee_attack_skill": 15,
+				"charge_bonus": 5,
+				"effective_against_cavalry": true
+		},
+
+		"missile": {
+				"missile_attack": 0,
+				"range": 0
+		},
+
+		//general attack
+		"armour_piercing": true,
+
+		"defence": {
+				"defence_skill": 3,
+				"armour": 0,
+				"shield": 0,
+				"hit_points": 1 
+		}
+
+	},
+	"swordsman": {
+
+		"unit_size": 48,
+
+		"has_missile": false,
+		"can_skirmish": false,
+
+		"melee": {
+				"melee_attack_skill": 13,
+				"charge_bonus": 3,
+				"effective_against_cavalry": true
+		},
+
+		"missile": {
+				"missile_attack": 0,
+				"range": 0
+		},
+
+		//general attack
+		"armour_piercing": false,
+
+		"defence": {
+				"defence_skill": 8,
+				"armour": 8,
+				"shield": 6,
+				"hit_points": 1 
+		}
+
+	},
+	"cavalry": {
+
+		"unit_size": 32,
+
+		"has_missile": false,
+		"can_skirmish": false,
+
+		"melee": {
+				"melee_attack_skill": 8,
+				"charge_bonus": 8,
+				"effective_against_cavalry": false
+		},
+
+		"missile": {
+				"missile_attack": 0,
+				"range": 0
+		},
+
+		//general attack
+		"armour_piercing": true,
+
+		"defence": {
+				"defence_skill": 4,
+				"armour": 8,
+				"shield": 4,
+				"hit_points": 1 
+		}
+
+
+	}
+}
