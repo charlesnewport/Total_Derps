@@ -175,19 +175,14 @@ class Manager:
 
 		if self.left_was_pressed:
 
-			print(self.x_1, self.y_1, self.x_2, self.y_2)
-
 			if self.x_1 != None and self.x_2 != None and self.y_1 != None and self.y_2 != None:
 
 				x_1, x_2 = sorted([self.x_1, self.x_2])
 				y_1, y_2 = sorted([self.y_1, self.y_2])
 
-				# pygame.draw.line(screen, (255, 0, 0), (self.x_1, self.y_1), (self.x_2, self.y_2), 1)
 				pygame.draw.rect(screen, (0, 255, 0), (x_1, y_1, x_2 - x_1, y_2 - y_1), 1)
 
 		if self.right_was_pressed:
-
-			# print(self.x_1, self.y_1, self.x_2, self.y_2)
 
 			if self.x_1 != None and self.x_2 != None and self.y_1 != None and self.y_2 != None:
 
@@ -201,7 +196,6 @@ class Manager:
 				line_angle = math.atan2(self.y_2 - self.y_1, self.x_2 - self.x_1)
 
 				line_length = max(line_length, (total_highlighted * units[0].unit_width) + ((total_highlighted - 1) * units[0].unit_height/4))
-				# line_length = max(line_length, (total_highlighted * units[0].unit_width) + ((total_highlighted - 1) * units[0].unit_width/4))
 
 				line_start_x = self.x_1
 				line_start_y = self.y_1
