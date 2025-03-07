@@ -6,6 +6,8 @@ import json
 
 import platform
 
+pygame.init()
+
 width = 720
 height = 720
 
@@ -18,14 +20,22 @@ unit_width = 31
 unit_height = 21
 unit_buffer = unit_height / 2
 
-total_player_units = 1
+total_player_units = 2
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
-increment = total_width / total_player_units
+player_increment = total_width / total_player_units
 
-player_units = [Unit(unit_info["England"]["Armoured Swordsmen"], width/2 - total_width/2 + unit_width/2 + increment * i, 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
-enemy_units = [Unit(unit_info["France"]["Armoured Sergeants"], width/2 - total_width/2 + unit_width/2 + increment * i, width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_player_units)]
+total_enemy_units = 1
+total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
+enemy_increment = total_width / total_enemy_units
+
+player_units = [Unit(unit_info["England"]["Peasants"], width/2 - total_width/2 + unit_width/2 + player_increment * i, 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+enemy_units = [Unit(unit_info["France"]["Armoured Sergeants"], width/2 - total_width/2 + unit_width/2 + enemy_increment * i, width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 
 manager = Manager("Player")
+
+#FONT
+font_size = 30
+font = pygame.font.SysFont("dejavuserif", font_size)
 
 while True:
 
@@ -35,23 +45,32 @@ while True:
 	#test branch
 
 	#Player units
-	for unit in player_units:
+	for i in range(len(player_units)-1, -1, -1):
+
+		if player_units[i].unit_size <= 0:
+
+			del(player_units[i])
+			continue
 
 		#Update Units
-		unit.update()
+		player_units[i].update(enemy_units)
 
 		#Display Units
-		
-		unit.draw(screen)
+		player_units[i].draw(screen)
 
 	#Enemy units
-	for unit in enemy_units:
+	for i in range(len(enemy_units)-1, -1, -1):
+
+		if enemy_units[i].unit_size <= 0:
+
+			del(enemy_units[i])
+			continue
 
 		#Update Units
-		unit.update()
+		enemy_units[i].update(player_units)
 
 		#Display Units
-		unit.draw(screen)
+		enemy_units[i].draw(screen)
 
 	#Pygame Events
 	keys = pygame.key.get_pressed()
@@ -67,6 +86,15 @@ while True:
 
 	#Display Manager
 	manager.draw(screen, player_units)
+
+	a = sum([p.unit_size for p in player_units])
+	d = sum([p.unit_size for p in enemy_units])
+
+	text = font.render(str(a) + " - " + str(d), False, (0, 0, 255) if d > a else (255, 0, 0))
+	text_width = text.get_width()
+	text_height = text.get_height()
+
+	screen.blit(text, (0, 0))
 
 	for event in pygame.event.get():
 

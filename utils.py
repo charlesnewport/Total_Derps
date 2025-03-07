@@ -67,6 +67,26 @@ def get_hypothetical_polygon(unit_x, unit_y, unit_height, unit_width, radius, an
 
 	return [polar(unit_x, unit_y, radius, theta + angle) for theta in angles]
 
+def check_units_collision(unit_a, unit_b):
+
+	#NOTE
+	#could also be done check checking the units heading and closest point to other unit
+
+	#early exit due to units being too far away from each other.
+	if distance(unit_a.x, unit_a.y, unit_b.x, unit_b.y) > unit_a.unit_width/2 + unit_b.unit_width/2:
+
+		return False
+
+	for ((x_1, y_1), (x_2, y_2)) in unit_a.get_lines():
+
+		for ((x_3, y_3), (x_4, y_4)) in unit_b.get_lines():
+
+			if check_intersection(x_1, y_1, x_2, y_2, x_3, y_3, x_4, y_4):
+
+				return True
+
+	return False
+
 def count_highlighted(units):
 
 	return sum([1 for unit in units if unit.highlight])

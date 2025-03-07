@@ -2,6 +2,7 @@ from utils import *
 
 import numpy as np
 import pygame
+import random
 import math
 import cv2
 
@@ -25,11 +26,16 @@ class Unit:
 		self.melee_armour_piercing = unit_class["melee_weapon"]["armour_piercing"]
 		self.charge_bonus = unit_class["melee_weapon"]["charge_bonus"]
 
+		self.melee_cooldown_time = 4 * 60 #FPS
+		self.melee_cooldown_time_counter = 0
+
 		###DEFENCE
 		self.defence_skill = unit_class["defence"]["defence_skill"]
 		self.armour = unit_class["defence"]["armour"]
 		self.shield = unit_class["defence"]["shield"]
 		self.hitpoints = unit_class["defence"]["hitpoints"]
+
+		self.hitpoints_array = [self.hitpoints for _ in range(self.unit_size)]
 
 		#MOVEMENT / POSITION
 		##SPEEDS
@@ -109,20 +115,108 @@ class Unit:
 		#Set STATE = 1 (Movement)
 		self.STATE = 1
 
-	def update(self):
+	def reset_target(self):
 
+		#Reset Target, Target Heading
+		self.target = None
+		self.target_heading = None
+
+		#TEMPORARY
+		#Set STATE = 0 (Idle)
+		self.STATE = 0
+
+	def get_defenders(self):
+
+		return min(self.unit_size, 10)
+
+	def melee_attack(self, enemy_unit):
+
+		a = self.melee_attack_skill
+		#apply directionality here (attacking from rear removes shield points)
+		d = enemy_unit.defence_skill + enemy_unit.armour + enemy_unit.shield
+
+		#get total defender
+		total_defenders = enemy_unit.get_defenders()
+
+		total_attackers = min(self.unit_size, 10)
+
+		# attackers_per_defender = total_attackers / total_defenders
+		#how to evenly split these?
+
+		#resolve conflict here
+		p_hit = 0
+		if a < d:
+
+			p_hit = (a + 1) / (2 * d)
+
+		else:
+
+			p_hit = ((2 * a) - d + 1) / (2 * a)
+
+		total_wins = sum([1 for i in range(total_defenders) if random.random() <= p_hit])
+
+		enemy_unit.resolve_skirmish(total_wins)
+
+		self.melee_cooldown_time_counter = 0
+
+	def check_collisions(self, opposition_units):
+
+		#Using enemy_target as an array of units that are currently being targeted vs
+		#Using enemy_target as a unit that the enemy should move towards.
+
+		enemies_collided_with = [opposition_unit for opposition_unit in opposition_units if check_units_collision(self, opposition_unit)]
+
+		if len(enemies_collided_with) == 0:
+
+			return
+
+		self.reset_target()
+
+		if not self.can_attack():
+
+			return
+
+		self.melee_attack(enemies_collided_with[0])
+
+	def resolve_skirmish(self, total_wins):
+
+		for i in range(len(self.hitpoints_array)-1, len(self.hitpoints_array) - total_wins - 1, -1):
+
+			self.hitpoints_array[i] -= 1
+
+			if self.hitpoints_array[i] == 0:
+
+				del(self.hitpoints_array[i])
+				self.unit_size -= 1
+
+	def can_attack(self):
+
+		return self.melee_cooldown_time_counter >= self.melee_cooldown_time
+
+	def update(self, opposition_units):
+
+		self.melee_cooldown_time_counter += 1
+
+		self.check_collisions(opposition_units)
+
+		#STATE SPECIFIC LOGIC
+
+		#IDLE
 		if self.STATE == 0:
 
-			pass
+			return
 
+		#MOVING
 		elif self.STATE == 1:
 
 			self.movement()
 
+		#SEEKING
 		elif self.STATE == 2:
 
 			pass
 
+		#ATTACKING
 		elif self.STATE == 3:
 
 			pass
@@ -137,7 +231,7 @@ class Unit:
 
 			angles.append(math.atan2(self.unit_height * y, self.unit_width * x))
 
-		return [polar(self.x, self.y, self.unit_radius, theta + self.heading) for theta in angles]
+		return [polar(self.x, self.y, self.unit_radius, theta + self.heading + math.pi/2) for theta in angles]
 
 	def get_lines(self):
 
@@ -222,4 +316,3 @@ class Archer(Unit):
 		elif self.STATE == 2:
 
 			pass
-
