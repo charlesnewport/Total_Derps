@@ -135,6 +135,11 @@ class Unit:
 		#apply directionality here (attacking from rear removes shield points)
 		d = enemy_unit.defence_skill + enemy_unit.armour + enemy_unit.shield
 
+		#Amour piercing removes half of the defending units armour
+		if a.melee_armour_piercing:
+
+			d -= enemy_unit.armour / 2
+
 		#get total defender
 		total_defenders = enemy_unit.get_defenders()
 
