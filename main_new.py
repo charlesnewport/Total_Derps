@@ -20,13 +20,13 @@ unit_width = 31
 unit_height = 21
 unit_buffer = unit_height / 2
 
-total_player_units = 1
+total_player_units = 3
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
 player_increment = total_width / total_player_units
 
 player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 
-total_enemy_units = 1
+total_enemy_units = 2
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
 enemy_increment = total_width / total_enemy_units
 
@@ -41,9 +41,6 @@ font = pygame.font.SysFont("dejavuserif", font_size)
 while True:
 
 	screen.fill((83, 161, 14))
-
-	#hello world
-	#test branch
 
 	#Player units
 	for i in range(len(player_units)-1, -1, -1):
@@ -83,7 +80,7 @@ while True:
 
 		mouse_buttons = [keys[pygame.K_LEFT], False, keys[pygame.K_RIGHT]]
 
-	manager.update(player_units, keys, mouse_buttons, mouse_pos)
+	manager.update(player_units, enemy_units, keys, mouse_buttons, mouse_pos)
 
 	#Display Manager
 	manager.draw(screen, player_units)

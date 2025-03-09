@@ -118,7 +118,7 @@ class Manager:
 				unit.set_target(points[point_index], line_angle - math.pi/2)
 				point_index += 1
 
-	def right_click(self, units, keys, mouse_buttons, mouse_pos):
+	def right_click(self, units, enemy_units, keys, mouse_buttons, mouse_pos):
 
 		#RIGHT CLICK
 
@@ -137,6 +137,34 @@ class Manager:
 			#On release
 			if self.right_was_pressed:
 
+				#Check if unit was attacked
+				attack_created = False
+
+				#temp ideas
+				for enemy_unit in enemy_units:
+
+					if point_in_unit(mouse_pos[0], mouse_pos[1], enemy_unit):
+
+						for unit in units:
+
+							if unit.highlight:
+
+								unit.set_target((enemy_unit.x, enemy_unit.y), math.atan2(enemy_unit.y - unit.y, enemy_unit.x - unit.x) - math.pi/2)
+
+								attack_created = True
+
+				if attack_created:
+
+					#Clear previous points
+					self.x_1 = None
+					self.y_1 = None
+
+					self.x_2 = None
+					self.y_2 = None
+
+					return
+
+				#Else move unit(s)
 				self.assign_positions(units)
 
 				#Clear previous points
@@ -160,10 +188,10 @@ class Manager:
 
 				unit.draw_final_location = False
 
-	def update(self, units, keys, mouse_buttons, mouse_pos):
+	def update(self, units, enemy_units, keys, mouse_buttons, mouse_pos):
 
 		self.left_click(units, keys, mouse_buttons, mouse_pos)
-		self.right_click(units, keys, mouse_buttons, mouse_pos)
+		self.right_click(units, enemy_units, keys, mouse_buttons, mouse_pos)
 
 		#Update Click Booleans
 		self.left_was_pressed = mouse_buttons[0]			
@@ -233,5 +261,3 @@ class Manager:
 					polygon_points = get_hypothetical_polygon(p[0], p[1], units[0].unit_height, units[0].unit_width, units[0].unit_radius, line_angle)
 
 					pygame.draw.polygon(screen, (255, 255, 0), polygon_points, 1)
-
-
