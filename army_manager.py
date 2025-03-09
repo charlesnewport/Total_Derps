@@ -92,14 +92,16 @@ class Manager:
 		line_start_y = self.y_1
 
 		#min line_length here
-		line_length = max(line_length, (total_highlighted * units[0].unit_width) + ((total_highlighted - 1) * units[0].unit_height/4))
+		unit_buffer = units[0].unit_height / 4
+		min_line_length = (total_highlighted * units[0].unit_width) + ((total_highlighted - 1) * unit_buffer)
+
+		line_length = max(line_length, min_line_length)
 
 		if self.x_1 == self.x_2 and self.y_1 == self.y_2:
 
 			line_start_x, line_start_y = polar(self.x_1, self.y_1, line_length/2, line_angle - math.pi)
 
-
-		increment = line_length / (total_highlighted - 1)
+		increment = line_length / total_highlighted
 
 		points = []
 
@@ -195,7 +197,12 @@ class Manager:
 				line_length = distance(self.x_1, self.y_1, self.x_2, self.y_2)
 				line_angle = math.atan2(self.y_2 - self.y_1, self.x_2 - self.x_1)
 
-				line_length = max(line_length, (total_highlighted * units[0].unit_width) + ((total_highlighted - 1) * units[0].unit_height/4))
+				# line_length = max(line_length, (total_highlighted * units[0].unit_width) + ((total_highlighted - 1) * units[0].unit_height/4))
+
+				unit_buffer = units[0].unit_height / 4
+				min_line_length = (total_highlighted * units[0].unit_width) + ((total_highlighted - 1) * unit_buffer)
+
+				line_length = max(line_length, min_line_length)
 
 				line_start_x = self.x_1
 				line_start_y = self.y_1
@@ -212,7 +219,8 @@ class Manager:
 
 					line_start_x, line_start_y = polar(self.x_1, self.y_1, line_length/2, line_angle - math.pi)
 
-				increment = line_length / (total_highlighted - 1)
+				# increment = line_length / (total_highlighted - 1)
+				increment = line_length / total_highlighted
 
 				points = []
 

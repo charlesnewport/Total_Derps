@@ -136,7 +136,7 @@ class Unit:
 		d = enemy_unit.defence_skill + enemy_unit.armour + enemy_unit.shield
 
 		#Amour piercing removes half of the defending units armour
-		if a.melee_armour_piercing:
+		if self.melee_armour_piercing:
 
 			d -= enemy_unit.armour / 2
 
@@ -276,7 +276,7 @@ class Unit:
 
 			self.draw_movement_lines(screen)
 
-		if self.draw_final_location:
+		if self.draw_final_location and self.target != None:
 
 			self.draw_movement_end(screen)
 
