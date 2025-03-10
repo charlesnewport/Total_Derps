@@ -1,3 +1,4 @@
+from missile import Missile
 from utils import *
 
 import numpy as np
@@ -111,7 +112,6 @@ class Unit:
 
 		angle_to_target = math.atan2(t_y - self.y, t_x - self.x)
 
-		#set heading = angle_to_target
 		self.heading = angle_to_target
 
 		x_speed, y_speed = polar(0, 0, self.running_speed if self.is_running else self.walking_speed, angle_to_target)
@@ -202,7 +202,7 @@ class Unit:
 		self.reset_enemy()
 		self.reset_target()
 
-		if not self.can_attack():
+		if not self.can_melee_attack():
 
 			return
 
@@ -219,7 +219,7 @@ class Unit:
 				del(self.hitpoints_array[i])
 				self.unit_size -= 1
 
-	def can_attack(self):
+	def can_melee_attack(self):
 
 		return self.melee_cooldown_time_counter >= self.melee_cooldown_time
 
@@ -227,9 +227,13 @@ class Unit:
 
 		pass
 
-	def update(self, opposition_units):
+	def update_alarms(self):
 
 		self.melee_cooldown_time_counter += 1
+
+	def update(self, opposition_units):
+
+		self.update_alarms()
 
 		#attacks automatically conducted based on collisions
 		self.check_collisions(opposition_units)
@@ -262,7 +266,7 @@ class Unit:
 		#ATTACKING
 		elif self.STATE == 3:
 
-			pass
+			self.attack()
 
 	def get_points(self):
 
@@ -384,28 +388,83 @@ class Unit:
 		#Draw image
 		screen.blit(temp_image, (self.x - w / 2, self.y - h / 2))
 
-class Archer(Unit):
+class Missile_Unit(Unit):
 
-	def __init__(self, x, y, unit_width, unit_height, unit_class):
+	def __init__(self, unit_class, x, y, unit_width, unit_height, unit_colour):
 
 		#SETUP PARENT
-		super().__init__(x, y, unit_width, unit_height, unit_class)
+		super().__init__(unit_class, x, y, unit_width, unit_height, unit_colour)
 
 		#RANGED STATS
 		self.ranged_attack_skill = unit_class["ranged_weapon"]["attack_skill"]
-		self.ranged_attack_range = unit_class["ranged_weapon"]["range"]
+		self.ranged_attack_range = unit_class["ranged_weapon"]["range"] * 5
 		self.ranged_armour_piercing = unit_class["ranged_weapon"]["armour_piercing"]
 		self.ranged_ammunition = unit_class["ranged_weapon"]["ammunition"]
 
+		#RANGED COOLDOWN
+		self.ranged_cooldown_time = 5 * 60 #FPS
+		self.ranged_cooldown_time_counter = 0
+
 		#SPECIFIC BEHAVIOUS
 		self.fire_at_will = False
-		self.skirmish_mode = False
-		#These will not include artillery
+		self.skirmish_mode = False #This will not include artillery
+
+		#PROJECTILES CREATED
+		self.missiles = []
+
+	def seeking(self):
+
+		e_x = self.enemy_target.x
+		e_y = self.enemy_target.y
+
+		self.move_to_target(e_x, e_y)
+
+		d = distance(self.x, self.y, e_x, e_y)
+
+		if d <= self.ranged_attack_range:
+
+			self.STATE = 3
+
+	def can_missile_attack(self):
+
+		return self.ranged_cooldown_time_counter >= self.ranged_cooldown_time and self.ranged_ammunition > 0
+
+	def update_alarms(self):
+
+		self.melee_cooldown_time_counter += 1
+		self.ranged_cooldown_time_counter += 1
 
 	#Overriden from the parent "Unit" class
 	def attack(self):
 
-		pass
+		# self.ranged_cooldown_time += 1
+
+		if not self.can_missile_attack():
+
+			return
+
+		#randomise self.x, self.y
+
+		#find the center of the front of the unit
+		self.missiles = []
+
+		for _ in range(self.unit_size):
+
+			c_x, c_y = polar(self.x, self.y, self.unit_height / 2, self.heading)
+
+			s_x, s_y = polar(c_x, c_y, self.unit_width / 2, self.heading - math.pi/2)
+			e_x, e_y = polar(c_x, c_y, self.unit_width / 2, self.heading - math.pi/2 + math.pi)
+
+			angle = math.atan2(e_y - s_y, e_x - s_x)
+
+			r = random.randint(0, self.unit_width)
+
+			p_x, p_y = polar(s_x, s_y, r, angle)
+
+			self.missiles.append(Missile(p_x, p_y, self.enemy_target.x, self.enemy_target.y, self.ranged_attack_skill, self.ranged_attack_range, self.ranged_armour_piercing))
+
+		self.ranged_cooldown_time_counter = 0
+		self.ranged_ammunition -= 1
 
 		#if right click, calculate position in range of target to aim from
 		#when at position, begin firing
@@ -415,3 +474,14 @@ class Archer(Unit):
 		#i.e. if firing from behind a friendly unit the accuracy will be lower as the arrows have to go over that unit.
 		#arrows are an independent unit that inherits the missile classes' missile damager and armour piercing stats which
 		#should allow it to damaged any unit it may hit (friend/foe)
+
+		#TODO
+		#Overwrite seeking to find position in range of enemy_unit
+		##This will be done continuously to ensure enemy_unit is in range
+		#On idle (STATE == 1)
+		#If enemy_unit != None
+		#Target enemy_unit
+		#Add arrows to main_new
+		#Add melee cooldown time
+		#Reset to idle on going out of range
+		#is guardmode disabled, chase down.

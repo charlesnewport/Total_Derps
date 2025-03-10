@@ -1,6 +1,8 @@
+from utils import distance, point_in_unit
+from unit_new import Unit, Missile_Unit
 from army_manager import Manager
-from unit_new import Unit
 
+import random
 import pygame
 import json
 
@@ -20,19 +22,23 @@ unit_width = 31
 unit_height = 21
 unit_buffer = unit_height / 2
 
-total_player_units = 2
+total_player_units = 10
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
 player_increment = total_width / total_player_units
 
-player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+# player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+player_units = [Missile_Unit(unit_info["England"]["Archer Militia"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 
-total_enemy_units = 2
+total_enemy_units = 1
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
 enemy_increment = total_width / total_enemy_units
 
-enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 
 manager = Manager("Player")
+
+missiles = []
 
 #FONT
 font_size = 30
@@ -53,6 +59,11 @@ while True:
 		#Update Units
 		player_units[i].update(enemy_units)
 
+		if player_units[i].unit_class == "Missile":
+
+			missiles.extend(player_units[i].missiles)
+			player_units[i].missiles = []
+
 		#Display Units
 		player_units[i].draw(screen)
 
@@ -69,6 +80,61 @@ while True:
 
 		#Display Units
 		enemy_units[i].draw(screen)
+
+	#Missile
+	for i in range(len(missiles)-1, -1, -1):
+
+		missiles[i].update()
+
+		#has landed
+		if distance(missiles[i].x, missiles[i].y, missiles[i].t_x, missiles[i].t_y) <= 10:
+
+			for unit in enemy_units + player_units:
+
+				if point_in_unit(missiles[i].t_x, missiles[i].t_y, unit):
+
+					#resolve arrow collision
+					a = missiles[i].missile_attack_skill
+					d = unit.defence_skill + unit.armour + unit.shield
+
+					if missiles[i].is_armour_piercing:
+
+						d -= unit.armour/2
+
+					p_hit = 0
+
+					if a < d:
+
+						p_hit = (a + 1) / (2 * d)
+
+					else:
+
+						p_hit = ((2 * a) - d + 1) / (2 * a)
+
+					# print(a, d, p_hit)
+
+					outcome = random.random() <= p_hit
+
+					if outcome:
+
+						if unit.unit_size > 0:
+
+							unit.hitpoints_array[0] -= 1
+
+							if unit.hitpoints_array[0] <= 0:
+
+								del(unit.hitpoints_array[0])
+								unit.unit_size -= 1
+
+
+					# total_wins = sum([1 for i in range(total_defenders) if random.random() <= p_hit])
+
+			del(missiles[i])
+
+			continue
+
+		missiles[i].draw(screen)
+
 
 	#Pygame Events
 	keys = pygame.key.get_pressed()

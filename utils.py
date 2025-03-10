@@ -20,6 +20,10 @@ def colour_unit(unit_icon, unit_colour):
 	# return pygame.image.frombuffer(image.flatten(), (cols, rows), "RGB")
 	return pygame.transform.flip(pygame.surfarray.make_surface(image).convert_alpha(), False, True)
 
+def lerp(a, b, t):
+
+	return ((1 - t) * a) + (t * b)
+
 def distance(x1, y1, x2, y2):
 
 	return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)

@@ -50,8 +50,8 @@ for i in range(df.shape[0]):
 
 			"range": int(current_unit["Range"]),
 			"attack_skill": int(current_unit["Primary_Attack"] if current_unit["Class"] == "Missile" else current_unit["Secondary_Attack"]),
-			"armour_piercing": bool(current_unit["ranged_armour_piercing"])
-
+			"armour_piercing": bool(current_unit["ranged_armour_piercing"]),
+			"ammunition": current_unit["Ammunition"]
 		},
 
 		"defence": {
