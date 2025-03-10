@@ -223,10 +223,15 @@ class Unit:
 
 		return self.melee_cooldown_time_counter >= self.melee_cooldown_time
 
+	def attack(self):
+
+		pass
+
 	def update(self, opposition_units):
 
 		self.melee_cooldown_time_counter += 1
 
+		#attacks automatically conducted based on collisions
 		self.check_collisions(opposition_units)
 
 		#STATE SPECIFIC LOGIC
@@ -315,23 +320,11 @@ class Unit:
 
 			movement_lines_array.extend(self.targets)
 
-		# if len(self.targets) == 1:
-
-		# 	pygame.draw.line(screen, (255, 255, 0), (self.x, self.y), self.targets[0], 3)
-
-		# 	return
-
-		# else:
-
-		# 	pygame.draw.lines(screen, (255, 255, 0), False, [(self.x, self.y)] + self.targets, 3)
-
 		movement_lines_len = len(movement_lines_array)
 
 		if movement_lines_len == 2:
 
 			l_1, l_2 = movement_lines_array
-
-			print(movement_lines_array)
 
 			pygame.draw.line(screen, (255, 255, 0), l_1, l_2, 3)
 
@@ -347,7 +340,21 @@ class Unit:
 
 	def draw_movement_end(self, screen):
 
-		polygon = get_hypothetical_polygon(self.targets[-1][0], self.targets[-1][1], self.unit_height, self.unit_width, self.unit_radius, self.target_headings[-1] - math.pi/2)
+		if self.enemy_target != None:
+
+			final_target_x = self.enemy_target.x
+			final_target_y = self.enemy_target.y
+
+			final_heading = math.atan2(self.enemy_target.y - (self.y if len(self.targets) == 0 else self.targets[-1][1]), self.enemy_target.x - (self.x if len(self.targets) == 0 else self.targets[-1][0]))
+
+		else:
+
+			final_target_x = self.targets[-1][0]
+			final_target_y = self.targets[-1][1]
+
+			final_heading = self.target_headings[-1]
+
+		polygon = get_hypothetical_polygon(final_target_x, final_target_y, self.unit_height, self.unit_width, self.unit_radius, final_heading - math.pi/2)
 
 		pygame.draw.polygon(screen, (255, 255, 0), polygon, 1)
 
@@ -361,11 +368,9 @@ class Unit:
 
 			self.highlight_unit(screen)
 
-			# if len(self.targets) != 0:
-
 			self.draw_movement_lines(screen)
 
-		if self.draw_final_location and self.targets != []:
+		if self.draw_final_location and (self.targets != [] or self.enemy_target != None):
 
 			self.draw_movement_end(screen)
 
@@ -397,16 +402,16 @@ class Archer(Unit):
 		self.skirmish_mode = False
 		#These will not include artillery
 
-	def update(self):
+	#Overriden from the parent "Unit" class
+	def attack(self):
 
-		if self.STATE == 0:
+		pass
 
-			pass
+		#if right click, calculate position in range of target to aim from
+		#when at position, begin firing
 
-		elif self.STATE == 1:
-
-			pass
-
-		elif self.STATE == 2:
-
-			pass
+		#accuracy based on distance to target
+		#future update will take into account any units in the way.
+		#i.e. if firing from behind a friendly unit the accuracy will be lower as the arrows have to go over that unit.
+		#arrows are an independent unit that inherits the missile classes' missile damager and armour piercing stats which
+		#should allow it to damaged any unit it may hit (friend/foe)
