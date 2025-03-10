@@ -71,8 +71,8 @@ class Unit:
 		self.STATE = 0
 
 		##STATE 1 - MOVEMENT VARIABLES
-		self.target = None
-		self.target_heading = None
+		self.targets = []
+		self.target_headings = []
 
 		self.target_min_distance = self.walking_speed
 
@@ -84,19 +84,32 @@ class Unit:
 	def movement(self):
 
 		#If it has arrived
-		if distance(self.target[0], self.target[1], self.x, self.y) < self.target_min_distance:
+		if distance(self.targets[0][0], self.targets[0][1], self.x, self.y) < self.target_min_distance:
 
 			#Clear target
-			self.x, self.y = self.target
-			self.target = None
-			self.heading = self.target_heading
+			self.x, self.y = self.targets[0]
+			self.heading = self.target_headings[0]
+
+			del(self.targets[0])
+			del(self.target_headings[0])
 
 			#Set STATE to idle
 			self.STATE = 0
 
 			return
 
-		angle_to_target = math.atan2(self.target[1] - self.y, self.target[0] - self.x)
+		self.move_to_target(self.targets[0][0], self.targets[0][1])
+
+	def seeking(self):
+
+		e_x = self.enemy_target.x
+		e_y = self.enemy_target.y
+
+		self.move_to_target(e_x, e_y)
+
+	def move_to_target(self, t_x, t_y):
+
+		angle_to_target = math.atan2(t_y - self.y, t_x - self.x)
 
 		#set heading = angle_to_target
 		self.heading = angle_to_target
@@ -106,20 +119,30 @@ class Unit:
 		self.x += x_speed
 		self.y += y_speed
 
-	def set_target(self, target, target_heading):
+	def set_target(self, target, target_heading, append=False):
 
-		#Set Target
-		self.target = target
-		self.target_heading = target_heading
+		if not append:
 
+			#Set Target
+			self.targets = [target]
+			self.target_headings = [target_heading]
+
+		else:
+
+			self.targets.append(target)
+			self.target_headings.append(target_heading)
+
+		#Reset Enemy Unit
+		self.reset_enemy()
 		#Set STATE = 1 (Movement)
+
 		self.STATE = 1
 
 	def reset_target(self):
 
 		#Reset Target, Target Heading
-		self.target = None
-		self.target_heading = None
+		self.targets = []
+		self.target_headings = []
 
 		#TEMPORARY
 		#Set STATE = 0 (Idle)
@@ -175,6 +198,8 @@ class Unit:
 
 			return
 
+		#reset any movement targets
+		self.reset_enemy()
 		self.reset_target()
 
 		if not self.can_attack():
@@ -209,7 +234,15 @@ class Unit:
 		#IDLE
 		if self.STATE == 0:
 
-			return
+			if len(self.targets) == 0:
+
+				if self.enemy_target != None:
+
+					self.STATE = 2
+
+			else:
+
+				self.STATE = 1
 
 		#MOVING
 		elif self.STATE == 1:
@@ -219,7 +252,7 @@ class Unit:
 		#SEEKING
 		elif self.STATE == 2:
 
-			pass
+			self.seeking()
 
 		#ATTACKING
 		elif self.STATE == 3:
@@ -252,15 +285,69 @@ class Unit:
 
 		return lines
 
+	def set_enemy(self, enemy_unit, append = False):
+
+		self.enemy_target = enemy_unit
+
+		#clears any movement targets
+		if not append:
+
+			self.reset_target()
+
+			self.STATE = 2
+
+	def append_enemy(self, enemy_unit):
+
+		self.enemy_target = enemy_unit
+
+	def reset_enemy(self):
+
+		self.enemy_target = None
+
 	def draw_movement_lines(self, screen):
 
-		if self.target != None:
+		#if has enemy target
+		#if has movement targets
 
-			pygame.draw.line(screen, (255, 255, 0), (self.x, self.y), self.target, 3)
+		movement_lines_array = [(self.x, self.y)]
+
+		if len(self.targets) != 0:
+
+			movement_lines_array.extend(self.targets)
+
+		# if len(self.targets) == 1:
+
+		# 	pygame.draw.line(screen, (255, 255, 0), (self.x, self.y), self.targets[0], 3)
+
+		# 	return
+
+		# else:
+
+		# 	pygame.draw.lines(screen, (255, 255, 0), False, [(self.x, self.y)] + self.targets, 3)
+
+		movement_lines_len = len(movement_lines_array)
+
+		if movement_lines_len == 2:
+
+			l_1, l_2 = movement_lines_array
+
+			print(movement_lines_array)
+
+			pygame.draw.line(screen, (255, 255, 0), l_1, l_2, 3)
+
+		elif movement_lines_len > 2:
+
+			pygame.draw.lines(screen, (255, 255, 0), False, movement_lines_array, 3)
+
+		if self.enemy_target != None:
+
+			movement_lines_array.append((self.enemy_target.x, self.enemy_target.y))
+
+			pygame.draw.line(screen, (255, 0, 0), movement_lines_array[-2], movement_lines_array[-1], 3)
 
 	def draw_movement_end(self, screen):
 
-		polygon = get_hypothetical_polygon(self.target[0], self.target[1], self.unit_height, self.unit_width, self.unit_radius, self.target_heading - math.pi/2)
+		polygon = get_hypothetical_polygon(self.targets[-1][0], self.targets[-1][1], self.unit_height, self.unit_width, self.unit_radius, self.target_headings[-1] - math.pi/2)
 
 		pygame.draw.polygon(screen, (255, 255, 0), polygon, 1)
 
@@ -274,9 +361,11 @@ class Unit:
 
 			self.highlight_unit(screen)
 
+			# if len(self.targets) != 0:
+
 			self.draw_movement_lines(screen)
 
-		if self.draw_final_location and self.target != None:
+		if self.draw_final_location and self.targets != []:
 
 			self.draw_movement_end(screen)
 

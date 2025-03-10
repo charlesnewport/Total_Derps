@@ -67,7 +67,7 @@ class Manager:
 				self.x_2 = None
 				self.y_2 = None
 
-	def assign_positions(self, units):
+	def assign_positions(self, units, keys):
 
 		total_highlighted = count_highlighted(units)
 
@@ -84,7 +84,7 @@ class Manager:
 
 				if unit.highlight:
 
-					unit.set_target((self.x_1, self.y_1), line_angle - math.pi/2)
+					unit.set_target((self.x_1, self.y_1), line_angle - math.pi/2, append=keys[pygame.K_LSHIFT])
 
 					return
 
@@ -115,7 +115,7 @@ class Manager:
 
 			if unit.highlight:
 
-				unit.set_target(points[point_index], line_angle - math.pi/2)
+				unit.set_target(points[point_index], line_angle - math.pi/2, append=keys[pygame.K_LSHIFT])
 				point_index += 1
 
 	def right_click(self, units, enemy_units, keys, mouse_buttons, mouse_pos):
@@ -149,7 +149,7 @@ class Manager:
 
 							if unit.highlight:
 
-								unit.set_target((enemy_unit.x, enemy_unit.y), math.atan2(enemy_unit.y - unit.y, enemy_unit.x - unit.x) - math.pi/2)
+								unit.set_enemy(enemy_unit, append=keys[pygame.K_LSHIFT])
 
 								attack_created = True
 
@@ -165,7 +165,7 @@ class Manager:
 					return
 
 				#Else move unit(s)
-				self.assign_positions(units)
+				self.assign_positions(units, keys)
 
 				#Clear previous points
 				self.x_1 = None
