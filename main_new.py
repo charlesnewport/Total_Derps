@@ -135,7 +135,6 @@ while True:
 
 		missiles[i].draw(screen)
 
-
 	#Pygame Events
 	keys = pygame.key.get_pressed()
 	mouse_buttons = pygame.mouse.get_pressed()

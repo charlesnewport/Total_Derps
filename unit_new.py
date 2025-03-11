@@ -397,7 +397,7 @@ class Missile_Unit(Unit):
 
 		#RANGED STATS
 		self.ranged_attack_skill = unit_class["ranged_weapon"]["attack_skill"]
-		self.ranged_attack_range = unit_class["ranged_weapon"]["range"] * 5
+		self.ranged_attack_range = unit_class["ranged_weapon"]["range"] * (self.unit_width / 16)
 		self.ranged_armour_piercing = unit_class["ranged_weapon"]["armour_piercing"]
 		self.ranged_ammunition = unit_class["ranged_weapon"]["ammunition"]
 
@@ -476,12 +476,90 @@ class Missile_Unit(Unit):
 		#should allow it to damaged any unit it may hit (friend/foe)
 
 		#TODO
-		#Overwrite seeking to find position in range of enemy_unit
-		##This will be done continuously to ensure enemy_unit is in range
-		#On idle (STATE == 1)
 		#If enemy_unit != None
-		#Target enemy_unit
-		#Add arrows to main_new
-		#Add melee cooldown time
+		#Target enemy_unit x
+		#Add arrows to main_new x
+		#Add melee cooldown time x
 		#Reset to idle on going out of range
 		#is guardmode disabled, chase down.
+
+	def draw_range_indicator(self, screen):
+
+		self.shooting_angle = math.radians(45)
+
+		#test firing radius/range
+		points = self.get_points()
+
+		#left handside
+		l_x, l_y = points[2]
+
+		#right handside
+		r_x, r_y = points[3]
+
+		#middle of front line
+		mid_x = (l_x + r_x) / 2
+		mid_y = (l_y + r_y) / 2
+
+		#Find the origin of the curve
+
+		##Triangle top corner angle
+		theta_2 = math.pi - (self.shooting_angle / 2) - (math.pi / 2)
+
+		##Height of the triangle
+		h = (self.unit_width / 2) * math.tan(theta_2)
+
+		o_x, o_y = polar(mid_x, mid_y, h, self.heading + math.pi)
+
+		##Angle dif from corner point
+		a = (math.pi / 2) - theta_2
+
+		##Draw straight bounds
+		a_l_x, a_l_y = polar(l_x, l_y, self.ranged_attack_range, self.heading - a)
+		pygame.draw.line(screen, (255, 255, 0), (a_l_x, a_l_y), (l_x, l_y), 2)
+
+		a_r_x, a_r_y = polar(r_x, r_y, self.ranged_attack_range, self.heading + a)
+		pygame.draw.line(screen, (255, 255, 0), (a_r_x, a_r_y), (r_x, r_y), 2)
+
+		#Draw Arc
+
+		##Hypotenuse of triangle
+		b = math.sqrt((self.unit_width/2)**2 + (h)**2)
+
+		##Find Arc points
+		total_increments = 10
+
+		increment_angle = self.shooting_angle / total_increments
+
+		lines = []
+
+		for i in range(total_increments + 1):
+
+			lines.append(polar(o_x, o_y, self.ranged_attack_range + b, self.heading - a + (i * increment_angle)))
+
+		#Draw Arc
+		pygame.draw.lines(screen, (255, 255, 0), False, lines, 2)
+
+	#Overridden from parent class
+	def draw(self, screen):
+
+		if self.highlight:
+
+			self.highlight_unit(screen)
+
+			self.draw_movement_lines(screen)
+
+			self.draw_range_indicator(screen)
+
+		if self.draw_final_location and (self.targets != [] or self.enemy_target != None):
+
+			self.draw_movement_end(screen)
+
+		#Rotate unit Image by unit Heading
+		temp_image = pygame.transform.rotate(self.image, math.degrees(-self.heading + math.pi))
+
+		#Calculate the Width and Height of the image to offset around the Center (x, y)
+		w = temp_image.get_width()
+		h = temp_image.get_height()
+
+		#Draw image
+		screen.blit(temp_image, (self.x - w / 2, self.y - h / 2))
