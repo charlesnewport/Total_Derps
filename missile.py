@@ -26,19 +26,11 @@ class Missile:
 		#Base Variables
 		self.base_radius_uncertainty = 31/2 #unit_width/2
 		self.min_radius_unceratinty_bonus = 0
-		self.max_radius_unceratinty_bonus = 31 #arrows could be one full unit's width away
+		self.max_radius_unceratinty_bonus = 31*2 #arrows could be one full unit's width away
 
 		#Create final radius uncerctainty. Lerp between 0 and max distance.
 		# self.radius_uncertainty = self.base_radius_uncertainty + lerp(self.min_radius_unceratinty_bonus, self.max_radius_unceratinty_bonus, self.distance_to_target / self.missile_attack_range)
-		self.radius_uncertainty = self.base_radius_uncertainty + lerp(self.min_radius_unceratinty_bonus, self.max_radius_unceratinty_bonus, 1)
-
-		# print("start")
-
-		# print(lerp(self.min_radius_unceratinty_bonus, self.max_radius_unceratinty_bonus, 0))
-		# print(lerp(self.min_radius_unceratinty_bonus, self.max_radius_unceratinty_bonus, self.distance_to_target / self.missile_attack_range))
-		# print(lerp(self.min_radius_unceratinty_bonus, self.max_radius_unceratinty_bonus, 1))
-
-		# print("end")
+		self.radius_uncertainty = self.base_radius_uncertainty + lerp(self.min_radius_unceratinty_bonus, self.max_radius_unceratinty_bonus, self.distance_to_target / self.missile_attack_range)
 
 		#Random radius
 		self.random_radius = random.uniform(0, self.radius_uncertainty)

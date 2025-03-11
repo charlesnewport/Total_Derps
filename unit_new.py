@@ -5,6 +5,7 @@ import numpy as np
 import pygame
 import random
 import math
+import uuid
 import cv2
 
 class Unit:
@@ -81,6 +82,25 @@ class Unit:
 
 		##STATE 3 - Attacking
 		self.enemy_target = None
+
+		#ID
+		self.unit_id = str(uuid.uuid4())
+
+	def __equal__(self, test):
+
+		return self.id == test.id
+
+	def idle(self, enemy_units):
+
+		if len(self.targets) == 0:
+
+			if self.enemy_target != None:
+
+				self.STATE = 2
+
+		else:
+
+			self.STATE = 1
 
 	def movement(self):
 
@@ -243,15 +263,7 @@ class Unit:
 		#IDLE
 		if self.STATE == 0:
 
-			if len(self.targets) == 0:
-
-				if self.enemy_target != None:
-
-					self.STATE = 2
-
-			else:
-
-				self.STATE = 1
+			self.idle(opposition_units)
 
 		#MOVING
 		elif self.STATE == 1:
@@ -312,6 +324,7 @@ class Unit:
 	def reset_enemy(self):
 
 		self.enemy_target = None
+		self.STATE = 0
 
 	def draw_movement_lines(self, screen):
 
@@ -406,7 +419,7 @@ class Missile_Unit(Unit):
 		self.ranged_cooldown_time_counter = 0
 
 		#SPECIFIC BEHAVIOUS
-		self.fire_at_will = False
+		self.fire_at_will = True
 		self.skirmish_mode = False #This will not include artillery
 
 		#PROJECTILES CREATED
@@ -434,6 +447,42 @@ class Missile_Unit(Unit):
 		self.melee_cooldown_time_counter += 1
 		self.ranged_cooldown_time_counter += 1
 
+	#Overrides Idle from Parent
+	def idle(self, enemy_units):
+
+		if len(self.targets) == 0:
+
+			if self.enemy_target != None:
+
+				self.STATE = 2
+
+		else:
+
+			self.STATE = 1
+
+		if not self.fire_at_will:
+
+			return
+
+		min_dist = float("inf")
+		min_unit = None
+
+		for unit in enemy_units:
+
+			d = distance(self.x, self.y, unit.x, unit.y)
+
+			#would need to account for triangle height
+			if d < self.ranged_attack_range:
+
+				if d < min_dist:
+
+					min_dist = d
+					min_unit = unit
+
+		if min_unit != None:
+
+			self.set_enemy(min_unit, False)
+
 	#Overriden from the parent "Unit" class
 	def attack(self):
 
@@ -443,6 +492,7 @@ class Missile_Unit(Unit):
 
 			return
 
+		print(self.enemy_target.unit_size)
 		#randomise self.x, self.y
 
 		#find the center of the front of the unit

@@ -2,11 +2,10 @@ from utils import distance, point_in_unit
 from unit_new import Unit, Missile_Unit
 from army_manager import Manager
 
+import platform
 import random
 import pygame
 import json
-
-import platform
 
 pygame.init()
 
@@ -33,16 +32,20 @@ total_enemy_units = 1
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
 enemy_increment = total_width / total_enemy_units
 
-enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
-# enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 
 manager = Manager("Player")
 
 missiles = []
 
+enemy_units[0].set_enemy(random.choice(player_units), False)
+
 #FONT
 font_size = 30
 font = pygame.font.SysFont("dejavuserif", font_size)
+
+units_killed = []
 
 while True:
 
@@ -53,8 +56,13 @@ while True:
 
 		if player_units[i].unit_size <= 0:
 
+			units_killed.append(player_units[i].unit_id)
 			del(player_units[i])
 			continue
+
+		if player_units[i].enemy_target != None and player_units[i].enemy_target.unit_id in units_killed:
+
+			player_units[i].reset_enemy()
 
 		#Update Units
 		player_units[i].update(enemy_units)
@@ -72,8 +80,13 @@ while True:
 
 		if enemy_units[i].unit_size <= 0:
 
+			units_killed.append(enemy_units[i].unit_id)
 			del(enemy_units[i])
 			continue
+
+		if enemy_units[i].enemy_target != None and enemy_units[i].enemy_target.unit_id in units_killed:
+
+			enemy_units[i].reset_enemy()
 
 		#Update Units
 		enemy_units[i].update(player_units)
@@ -141,6 +154,7 @@ while True:
 	mouse_pos = pygame.mouse.get_pos()
 
 	#Update Manager
+
 	if platform.system() == "Linux":
 
 		mouse_buttons = [keys[pygame.K_LEFT], False, keys[pygame.K_RIGHT]]
@@ -161,6 +175,7 @@ while True:
 	screen.blit(text, (0, 0))
 
 	#Events
+
 	for event in pygame.event.get():
 
 		if event.type == pygame.QUIT:
