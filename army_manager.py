@@ -84,7 +84,7 @@ class Manager:
 
 				if unit.highlight:
 
-					unit.set_target((self.x_1, self.y_1), line_angle - math.pi/2, append=keys[pygame.K_LSHIFT])
+					unit.set_target((self.x_1, self.y_1), line_angle - math.pi/2, append=(keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]))
 
 					return
 
@@ -115,7 +115,7 @@ class Manager:
 
 			if unit.highlight:
 
-				unit.set_target(points[point_index], line_angle - math.pi/2, append=keys[pygame.K_LSHIFT])
+				unit.set_target(points[point_index], line_angle - math.pi/2, append=(keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]))
 				point_index += 1
 
 	def right_click(self, units, enemy_units, keys, mouse_buttons, mouse_pos):
@@ -149,7 +149,7 @@ class Manager:
 
 							if unit.highlight:
 
-								unit.set_enemy(enemy_unit, append=keys[pygame.K_LSHIFT])
+								unit.set_enemy(enemy_unit, append=(keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]))
 
 								attack_created = True
 
