@@ -54,4 +54,4 @@ class Missile:
 
 		pygame.draw.circle(screen, (255, 255, 255), (self.x, self.y), 2)
 
-		pygame.draw.circle(screen, (255, 0, 0), (self.t_x, self.t_y), 2)
+		# pygame.draw.circle(screen, (255, 0, 0), (self.t_x, self.t_y), 2)

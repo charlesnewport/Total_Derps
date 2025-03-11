@@ -16,6 +16,8 @@ class Unit:
 		##TYPE
 		self.unit_class = unit_class["unit_class"]
 
+		self.unit_name = unit_class["unit_name"]
+
 		##SIZE
 		self.unit_size = unit_class["unit_size"]
 
@@ -96,6 +98,7 @@ class Unit:
 	def get_information(self):
 
 		return [
+			self.unit_name,
 			"Unit class: " + self.unit_class,
 			"Troops: " + str(self.unit_size),
 		]
@@ -428,9 +431,11 @@ class Missile_Unit(Unit):
 		self.ranged_attack_range = unit_class["ranged_weapon"]["range"] * (self.unit_width / 16)
 		self.ranged_armour_piercing = unit_class["ranged_weapon"]["armour_piercing"]
 		self.ranged_ammunition = unit_class["ranged_weapon"]["ammunition"]
+		self.rate_of_fire = unit_class["ranged_weapon"]["rate_of_fire"] #RPM
 
 		#RANGED COOLDOWN
 		self.ranged_cooldown_time = 5 * 60 #FPS
+		# self.ranged_cooldown_time = 60 * 60 / self.rate_of_fire
 		self.ranged_cooldown_time_counter = random.randint(0, self.ranged_cooldown_time)
 
 		#SPECIFIC BEHAVIOUS
@@ -443,6 +448,7 @@ class Missile_Unit(Unit):
 	def get_information(self):
 
 		return [
+			self.unit_name,
 			"Unit class: " + self.unit_class,
 			"Troops: " + str(self.unit_size),
 			"Ammunition: " + str(int(self.ranged_ammunition))
@@ -466,7 +472,6 @@ class Missile_Unit(Unit):
 	def update_alarms(self):
 
 		self.melee_cooldown_time_counter += 1
-		self.ranged_cooldown_time_counter += 1
 
 	#Overrides Idle from Parent
 	def idle(self, enemy_units):
@@ -510,6 +515,8 @@ class Missile_Unit(Unit):
 
 	#Overriden from the parent "Unit" class
 	def attack(self):
+
+		self.ranged_cooldown_time_counter += 1
 
 		#check enemy in range
 		if not self.enemy_in_range():

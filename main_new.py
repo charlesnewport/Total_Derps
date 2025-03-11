@@ -22,21 +22,21 @@ unit_width = 31
 unit_height = 21
 unit_buffer = unit_height / 2
 
-total_player_units = 1
+total_player_units = 5
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
 player_increment = total_width / total_player_units
 
-# player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
-player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
-# player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
+player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+# player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
 # player_units.extend([Missile_Unit(unit_info["England"]["Archer Militia"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
 
-total_enemy_units = 1
+total_enemy_units = 5
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
 enemy_increment = total_width / total_enemy_units
 
-# enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
-enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 # enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 
 manager = Manager("Player")
@@ -49,9 +49,8 @@ for index, e in enumerate(enemy_units):
 	e.set_enemy(player_units[index], False)
 
 #FONT
-font_size = 40
-font = pygame.font.SysFont("Minecraft.ttf", font_size)
-font_small = pygame.font.SysFont("Minecraft.ttf", int(font_size/2))
+font_size = 15
+font = pygame.font.SysFont("Minecraft", font_size)
 
 units_killed = []
 
@@ -175,9 +174,16 @@ while True:
 	manager.draw(screen, player_units)
 
 	#temp
-	x, y = polar(player_units[0].x, player_units[0].y, player_units[0].unit_radius, -math.pi/2)
+	x, y = pygame.mouse.get_pos()
 
-	draw_info_card(screen, font_small, x, y, player_units[0].get_information())
+	for unit in player_units + enemy_units:
+
+		if point_in_unit(x, y, unit):
+
+			x, y = polar(unit.x, unit.y, unit.unit_radius, -math.pi/2)
+
+			draw_info_card(screen, font, x, y, unit.get_information())
+			break
 
 	#Temp Debug Info
 	a = sum([p.unit_size for p in player_units])

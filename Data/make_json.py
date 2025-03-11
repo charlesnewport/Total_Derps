@@ -29,8 +29,8 @@ for i in range(df.shape[0]):
 		"unit_morale": int(current_unit["Morale"]),
 		"unit_discipline": current_unit["Discipline"],
 
+		"unit_name": current_unit["Name"],
 		"unit_class": current_unit["Class"],
-
 		"unit_type": current_unit["Primary weapon"],
 
 		"unit_image": current_unit["Primary weapon"] if not current_unit["Primary weapon"] == "cavalry" else "cavalry" + "_" + current_unit["Class"].lower(),
@@ -51,7 +51,8 @@ for i in range(df.shape[0]):
 			"range": int(current_unit["Range"]),
 			"attack_skill": int(current_unit["Primary_Attack"] if current_unit["Class"] == "Missile" else current_unit["Secondary_Attack"]),
 			"armour_piercing": bool(current_unit["ranged_armour_piercing"]),
-			"ammunition": current_unit["Ammunition"]
+			"ammunition": int(current_unit["Ammunition"]),
+			"rate_of_fire": {"archer": 6, "crossbow": 3}[current_unit["Primary weapon"]] if current_unit["Primary weapon"] in ["archer", "crossbow"] else 0 
 		},
 
 		"defence": {
