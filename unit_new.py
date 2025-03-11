@@ -15,7 +15,7 @@ class Unit:
 		#UNIT INFO
 		##TYPE
 		self.unit_class = unit_class["unit_class"]
-
+		self.unit_type = unit_class["unit_type"]
 		self.unit_name = unit_class["unit_name"]
 
 		##SIZE
@@ -45,6 +45,11 @@ class Unit:
 		##SPEEDS
 		self.walking_speed = 0.25
 		self.running_speed = 0.5
+
+		if self.unit_type == "cavalry":
+
+			self.walking_speed = 0.5
+			self.running_speed = 1
 
 		##SPEED BOOLEAN
 		self.is_running = False

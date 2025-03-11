@@ -29,15 +29,17 @@ player_increment = total_width / total_player_units
 player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 # player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
-# player_units.extend([Missile_Unit(unit_info["England"]["Archer Militia"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
+player_units.extend([Unit(unit_info["England"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
+player_units.extend([Unit(unit_info["England"]["Hobilars"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(2)])
 
-total_enemy_units = 5
+total_enemy_units = 10
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
 enemy_increment = total_width / total_enemy_units
 
-enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 # enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
-# enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
 
 manager = Manager("Player")
 
@@ -46,7 +48,7 @@ missiles = []
 #Temp
 for index, e in enumerate(enemy_units):
 
-	e.set_enemy(player_units[index], False)
+	e.set_enemy(player_units[random.randint(0, len(player_units)-1)], False)
 
 #FONT
 font_size = 15
@@ -54,108 +56,118 @@ font = pygame.font.SysFont("Minecraft", font_size)
 
 units_killed = []
 
+pause = True
+first_pause = True
+
 while True:
 
 	screen.fill((83, 161, 14))
 
-	#Player units
-	for i in range(len(player_units)-1, -1, -1):
+	#Updates
 
-		if player_units[i].unit_size <= 0:
+	if first_pause:
 
-			units_killed.append(player_units[i].unit_id)
-			del(player_units[i])
-			continue
+		for unit in player_units:
 
-		if player_units[i].enemy_target != None and player_units[i].enemy_target.unit_id in units_killed:
+			if unit.targets != []:
 
-			player_units[i].reset_enemy()
+				unit.x, unit.y = unit.targets[0]
+				unit.heaing = unit.target_headings[0]
 
-		#Update Units
-		player_units[i].update(enemy_units)
+				unit.reset_target()
 
-		if player_units[i].unit_class == "Missile":
+	if not pause:
 
-			missiles.extend(player_units[i].missiles)
-			player_units[i].missiles = []
+		#Player units
+		for i in range(len(player_units)-1, -1, -1):
 
-		#Display Units
-		player_units[i].draw(screen)
+			if player_units[i].unit_size <= 0:
 
-	#Enemy units
-	for i in range(len(enemy_units)-1, -1, -1):
+				units_killed.append(player_units[i].unit_id)
+				del(player_units[i])
+				continue
 
-		if enemy_units[i].unit_size <= 0:
+			if player_units[i].enemy_target != None and player_units[i].enemy_target.unit_id in units_killed:
 
-			units_killed.append(enemy_units[i].unit_id)
-			del(enemy_units[i])
-			continue
+				player_units[i].reset_enemy()
 
-		if enemy_units[i].enemy_target != None and enemy_units[i].enemy_target.unit_id in units_killed:
+			#Update Units
+			player_units[i].update(enemy_units)
 
-			enemy_units[i].reset_enemy()
+			if player_units[i].unit_class == "Missile":
 
-		#Update Units
-		enemy_units[i].update(player_units)
+				missiles.extend(player_units[i].missiles)
+				player_units[i].missiles = []
 
-		if enemy_units[i].unit_class == "Missile":
+		#Enemy units
+		for i in range(len(enemy_units)-1, -1, -1):
 
-			missiles.extend(enemy_units[i].missiles)
-			enemy_units[i].missiles = []
+			if enemy_units[i].unit_size <= 0:
 
-		#Display Units
-		enemy_units[i].draw(screen)
+				units_killed.append(enemy_units[i].unit_id)
+				del(enemy_units[i])
+				continue
 
-	#Missile
-	for i in range(len(missiles)-1, -1, -1):
+			if enemy_units[i].enemy_target != None and enemy_units[i].enemy_target.unit_id in units_killed:
 
-		missiles[i].update()
+				enemy_units[i].reset_enemy()
 
-		#has landed
-		if distance(missiles[i].x, missiles[i].y, missiles[i].t_x, missiles[i].t_y) <= 10:
+			#Update Units
+			enemy_units[i].update(player_units)
 
-			for unit in enemy_units + player_units:
+			if enemy_units[i].unit_class == "Missile":
 
-				if point_in_unit(missiles[i].t_x, missiles[i].t_y, unit):
+				missiles.extend(enemy_units[i].missiles)
+				enemy_units[i].missiles = []
 
-					#resolve arrow collision
-					a = missiles[i].missile_attack_skill
-					d = unit.defence_skill + unit.armour + unit.shield
+		#Missile
+		for i in range(len(missiles)-1, -1, -1):
 
-					if missiles[i].is_armour_piercing:
+			missiles[i].update()
 
-						d -= unit.armour/2
+			#has landed
+			if distance(missiles[i].x, missiles[i].y, missiles[i].t_x, missiles[i].t_y) <= 10:
 
-					p_hit = 0
+				for unit in enemy_units + player_units:
 
-					if a < d:
+					if point_in_unit(missiles[i].t_x, missiles[i].t_y, unit):
 
-						p_hit = (a + 1) / (2 * d)
+						#resolve arrow collision
+						a = missiles[i].missile_attack_skill
+						d = unit.defence_skill + unit.armour + unit.shield
 
-					else:
+						if missiles[i].is_armour_piercing:
 
-						p_hit = ((2 * a) - d + 1) / (2 * a)
+							d -= unit.armour/2
 
-					# print(a, d, p_hit)
+						p_hit = 0
 
-					outcome = random.random() <= p_hit
+						if a < d:
 
-					if outcome:
+							p_hit = (a + 1) / (2 * d)
 
-						if unit.unit_size > 0:
+						else:
 
-							unit.hitpoints_array[0] -= 1
+							p_hit = ((2 * a) - d + 1) / (2 * a)
 
-							if unit.hitpoints_array[0] <= 0:
+						# print(a, d, p_hit)
 
-								del(unit.hitpoints_array[0])
-								unit.unit_size -= 1
+						outcome = random.random() <= p_hit
 
-			del(missiles[i])
+						if outcome:
 
-			continue
+							if unit.unit_size > 0:
 
-		missiles[i].draw(screen)
+								unit.hitpoints_array[0] -= 1
+
+								if unit.hitpoints_array[0] <= 0:
+
+									del(unit.hitpoints_array[0])
+									unit.unit_size -= 1
+
+				del(missiles[i])
+
+				continue
 
 	#Pygame Events
 	keys = pygame.key.get_pressed()
@@ -170,6 +182,20 @@ while True:
 
 	manager.update(player_units, enemy_units, keys, mouse_buttons, mouse_pos)
 
+	#Display
+	for unit in enemy_units + player_units:
+
+		unit.draw(screen)
+
+	for missile in missiles:
+
+		missile.draw(screen)
+
+	# #Display Units
+	# player_units[i].draw(screen)
+	# #Display Units
+	# enemy_units[i].draw(screen)
+	# missiles[i].draw(screen)
 	#Display Manager
 	manager.draw(screen, player_units)
 
@@ -209,6 +235,27 @@ while True:
 
 				pygame.quit()
 				exit()
+
+			if event.key == pygame.K_a:
+
+				for unit in player_units:
+
+					if unit.highlight and unit.unit_class == "Missile":
+
+						unit.fire_at_will = not unit.fire_at_will
+
+			if event.key == pygame.K_r:
+
+				for unit in player_units:
+
+					if unit.highlight:
+
+						unit.is_running = not unit.is_running
+
+			if event.key == pygame.K_p:
+
+				pause = not pause
+				first_pause = False
 
 	pygame.display.update()
 	clock.tick(60)

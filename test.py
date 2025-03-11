@@ -1,9 +1,8 @@
-import json
+from general import General
 
-filename = "Data/nations.json"
+g = General("France")
 
-data = json.load(open(filename))
-
+print(g.units)
 # print(data.keys())
 
 # for nation in data.keys():
@@ -67,8 +66,6 @@ data = json.load(open(filename))
 # # ph = (A+1)/(2*D)
 # # print(ph)
 # # spans = ["1","The Byzantine Empire","2","Denmark","3","Egypt","4","England","5","France","6","The Holy Roman Empire","7","Hungary","8","Milan","9","Moors","10","Poland","11","Portugal","12","Russia","13","Scotland","14","Sicily","15","Spain","16","The Turks","17","Venice","18","The original Unit Planner","19","Abbreviations","20","External links","The Byzantine Empire","Denmark","Egypt","England","France","The Holy Roman Empire","Hungary","Milan","Moors","Poland","Portugal","Russia","Scotland","Sicily","Spain","The Turks","Venice","The original Unit Planner","Abbreviations","External links"]
-
-
 # # print(nations)
 
 # # import pygame

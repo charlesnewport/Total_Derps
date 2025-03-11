@@ -189,26 +189,39 @@ class Manager:
 				unit.draw_final_location = False
 
 		#Select infantry
-		if keys[pygame.K_LCTRL] and keys[pygame.K_i]:
+		if (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) and keys[pygame.K_i]:
 
 			for unit in units:
 				
-				unit.highlight = not (unit.unit_class == "Missile")
+				unit.highlight = not (unit.unit_class == "Missile" or unit.unit_type.lower() == "cavalry")
 
 		#Select missiles
-		if keys[pygame.K_LCTRL] and keys[pygame.K_m]:
+		if (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) and keys[pygame.K_m]:
 
 			for unit in units:
 				
 				unit.highlight = unit.unit_class == "Missile"
 
-		if keys[pygame.K_a]:
+		if (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) and keys[pygame.K_a]:
 
 			for unit in units:
+				
+				unit.highlight = True
 
-				if unit.highlight and unit.unit_class == "Missile":
+		if (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) and keys[pygame.K_c]:
 
-					unit.fire_at_will = not unit.fire_at_will
+			for unit in units:
+				
+				unit.highlight = unit.unit_type == "cavalry"
+
+
+		# if keys[pygame.K_a]:
+
+		# 	for unit in units:
+
+		# 		if unit.highlight and unit.unit_class == "Missile":
+
+		# 			unit.fire_at_will = not unit.fire_at_will
 
 		if keys[pygame.K_BACKSPACE]:
 
