@@ -188,6 +188,37 @@ class Manager:
 
 				unit.draw_final_location = False
 
+		#Select infantry
+		if keys[pygame.K_LCTRL] and keys[pygame.K_i]:
+
+			for unit in units:
+				
+				unit.highlight = not (unit.unit_class == "Missile")
+
+		#Select missiles
+		if keys[pygame.K_LCTRL] and keys[pygame.K_m]:
+
+			for unit in units:
+				
+				unit.highlight = unit.unit_class == "Missile"
+
+		if keys[pygame.K_a]:
+
+			for unit in units:
+
+				if unit.highlight and unit.unit_class == "Missile":
+
+					unit.fire_at_will = not unit.fire_at_will
+
+		if keys[pygame.K_BACKSPACE]:
+
+			for unit in units:
+
+				if unit.highlight:
+
+					unit.cancel_orders()
+
+
 	def update(self, units, enemy_units, keys, mouse_buttons, mouse_pos):
 
 		self.left_click(units, keys, mouse_buttons, mouse_pos)

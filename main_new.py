@@ -21,25 +21,28 @@ unit_width = 31
 unit_height = 21
 unit_buffer = unit_height / 2
 
-total_player_units = 10
+total_player_units = 1
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
 player_increment = total_width / total_player_units
 
-# player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
-player_units = [Missile_Unit(unit_info["England"]["Archer Militia"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+# player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
+# player_units.extend([Missile_Unit(unit_info["England"]["Archer Militia"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
 
 total_enemy_units = 1
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
 enemy_increment = total_width / total_enemy_units
 
 # enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
-enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 
 manager = Manager("Player")
 
 missiles = []
 
-enemy_units[0].set_enemy(random.choice(player_units), False)
+for index, e in enumerate(enemy_units):
+	e.set_enemy(player_units[index], False)
 
 #FONT
 font_size = 30
@@ -90,6 +93,11 @@ while True:
 
 		#Update Units
 		enemy_units[i].update(player_units)
+
+		if enemy_units[i].unit_class == "Missile":
+
+			missiles.extend(enemy_units[i].missiles)
+			enemy_units[i].missiles = []
 
 		#Display Units
 		enemy_units[i].draw(screen)
@@ -175,7 +183,6 @@ while True:
 	screen.blit(text, (0, 0))
 
 	#Events
-
 	for event in pygame.event.get():
 
 		if event.type == pygame.QUIT:

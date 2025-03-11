@@ -29,7 +29,7 @@ class Unit:
 		self.charge_bonus = unit_class["melee_weapon"]["charge_bonus"]
 
 		self.melee_cooldown_time = 4 * 60 #FPS
-		self.melee_cooldown_time_counter = 0
+		self.melee_cooldown_time_counter = random.randint(0, self.melee_cooldown_time)
 
 		###DEFENCE
 		self.defence_skill = unit_class["defence"]["defence_skill"]
@@ -41,8 +41,8 @@ class Unit:
 
 		#MOVEMENT / POSITION
 		##SPEEDS
-		self.walking_speed = 0.5
-		self.running_speed = 1
+		self.walking_speed = 0.25
+		self.running_speed = 0.5
 
 		##SPEED BOOLEAN
 		self.is_running = False
@@ -68,6 +68,9 @@ class Unit:
 		self.draw_final_location = False
 		self.unit_radius = math.sqrt((self.unit_width ** 2) + (self.unit_height ** 2)) / 2
 
+		#UNIT BEHAVIOURS
+		self.guard_mode = False
+
 		#STATE MANAGEMENT
 		##CURRENT STATE
 		self.STATE = 0
@@ -89,6 +92,11 @@ class Unit:
 	def __equal__(self, test):
 
 		return self.id == test.id
+
+	def cancel_orders(self):
+
+		self.reset_enemy()
+		self.reset_target()
 
 	def idle(self, enemy_units):
 
@@ -416,7 +424,7 @@ class Missile_Unit(Unit):
 
 		#RANGED COOLDOWN
 		self.ranged_cooldown_time = 5 * 60 #FPS
-		self.ranged_cooldown_time_counter = 0
+		self.ranged_cooldown_time_counter = random.randint(0, self.ranged_cooldown_time)
 
 		#SPECIFIC BEHAVIOUS
 		self.fire_at_will = True
@@ -432,9 +440,7 @@ class Missile_Unit(Unit):
 
 		self.move_to_target(e_x, e_y)
 
-		d = distance(self.x, self.y, e_x, e_y)
-
-		if d <= self.ranged_attack_range:
+		if self.enemy_in_range():
 
 			self.STATE = 3
 
@@ -483,17 +489,29 @@ class Missile_Unit(Unit):
 
 			self.set_enemy(min_unit, False)
 
+	def enemy_in_range(self):
+
+		return distance(self.x, self.y, self.enemy_target.x, self.enemy_target.y) <= self.ranged_attack_range
+
 	#Overriden from the parent "Unit" class
 	def attack(self):
 
-		# self.ranged_cooldown_time += 1
+		#check enemy in range
+		if not self.enemy_in_range():
+
+			#Guard mode
+			if self.guard_mode:
+
+				self.cancel_orders()
+
+			#No Guard mode - Seek enemy
+			else:
+
+				self.STATE = 2
 
 		if not self.can_missile_attack():
 
 			return
-
-		print(self.enemy_target.unit_size)
-		#randomise self.x, self.y
 
 		#find the center of the front of the unit
 		self.missiles = []
@@ -613,3 +631,12 @@ class Missile_Unit(Unit):
 
 		#Draw image
 		screen.blit(temp_image, (self.x - w / 2, self.y - h / 2))
+
+		#TEMP
+		if self.fire_at_will:
+
+			lines = self.get_lines()
+
+			for l_1, l_2 in lines:
+
+				pygame.draw.line(screen, (0, 255, 0), l_1, l_2, 2)
