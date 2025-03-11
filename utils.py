@@ -126,26 +126,46 @@ def unit_in_rectangle(unit, x_1, y_1, x_2, y_2):
 
 	return unit.x <= x_2 and unit.x >= x_1 and unit.y <= y_2 and unit.y >= y_1
 
+def draw_info_card(screen, font, x, y, information):
 
-	# highlight_points = [(x_1, y_1), (x_2, y_2), (x_1, y_2), (x_2, y_1)]
+	background_colour = (150, 150, 150)
+	outline_colour = (0, 0, 0)
+	text_colour = (0, 0, 0)
 
-	# highlight_lines = []
+	line_buffer = 5
+	width_buffer = 5
 
-	# for i in range(1, len(highlight_points)):
+	text_to_render = []
 
-	# 	highlight_lines.append([highlight_points[i], highlight_points[i-1]])
+	max_width = -float("inf")
+	sum_height = 0
 
-	# highlight_lines.append((highlight_points[0], highlight_points[-1]))
+	for i in information:
 
-	# for ((x_1, y_1), (x_2, y_2)) in highlight_lines:
+		text = font.render(i, False, text_colour)
 
-	# 	for ((x_3, y_3), (x_4, y_4)) in unit.get_lines():
+		max_width = max(max_width, text.get_width())
+		sum_height += text.get_height()
 
-	# 		if check_intersection(x_1, y_1, x_2, y_2, x_3, y_3, x_4, y_4):
+		text_to_render.append(text)
 
-	# 			return True
+	tl_x = x - max_width / 2 - width_buffer
+	tl_y = y - sum_height - ((len(information) + 1) * line_buffer)
 
-	# return False
+	pygame.draw.rect(screen, background_colour, (tl_x, tl_y, max_width + 2 * width_buffer, sum_height + (len(information) + 1) * line_buffer))
+	pygame.draw.rect(screen, outline_colour, (tl_x, tl_y, max_width + 2 * width_buffer, sum_height + (len(information) + 1) * line_buffer), 1)
 
+	text_x = tl_x + width_buffer
+	text_y = tl_y + line_buffer
 
-	# #check if any lines collide
+	for index, t in enumerate(text_to_render):
+
+		screen.blit(t, (text_x, text_y))
+
+		text_y += t.get_height() + line_buffer
+
+	# text = font.render(str(a) + " - " + str(d), False, (0, 0, 255) if d > a else (255, 0, 0))
+	# text_width = text.get_width()
+	# text_height = text.get_height()
+
+	# screen.blit(text, (0, 0))

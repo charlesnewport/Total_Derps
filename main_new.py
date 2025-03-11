@@ -1,4 +1,4 @@
-from utils import distance, point_in_unit
+from utils import distance, point_in_unit, polar, draw_info_card
 from unit_new import Unit, Missile_Unit
 from army_manager import Manager
 
@@ -6,6 +6,7 @@ import platform
 import random
 import pygame
 import json
+import math
 
 pygame.init()
 
@@ -25,7 +26,8 @@ total_player_units = 1
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
 player_increment = total_width / total_player_units
 
-player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+# player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 # player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
 # player_units.extend([Missile_Unit(unit_info["England"]["Archer Militia"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
 
@@ -41,12 +43,15 @@ manager = Manager("Player")
 
 missiles = []
 
+#Temp
 for index, e in enumerate(enemy_units):
+
 	e.set_enemy(player_units[index], False)
 
 #FONT
-font_size = 30
-font = pygame.font.SysFont("dejavuserif", font_size)
+font_size = 40
+font = pygame.font.SysFont("Minecraft.ttf", font_size)
+font_small = pygame.font.SysFont("Minecraft.ttf", int(font_size/2))
 
 units_killed = []
 
@@ -147,9 +152,6 @@ while True:
 								del(unit.hitpoints_array[0])
 								unit.unit_size -= 1
 
-
-					# total_wins = sum([1 for i in range(total_defenders) if random.random() <= p_hit])
-
 			del(missiles[i])
 
 			continue
@@ -171,6 +173,11 @@ while True:
 
 	#Display Manager
 	manager.draw(screen, player_units)
+
+	#temp
+	x, y = polar(player_units[0].x, player_units[0].y, player_units[0].unit_radius, -math.pi/2)
+
+	draw_info_card(screen, font_small, x, y, player_units[0].get_information())
 
 	#Temp Debug Info
 	a = sum([p.unit_size for p in player_units])

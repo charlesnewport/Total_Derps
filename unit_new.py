@@ -93,6 +93,13 @@ class Unit:
 
 		return self.id == test.id
 
+	def get_information(self):
+
+		return [
+			"Unit class: " + self.unit_class,
+			"Troops: " + str(self.unit_size),
+		]
+
 	def cancel_orders(self):
 
 		self.reset_enemy()
@@ -432,6 +439,14 @@ class Missile_Unit(Unit):
 
 		#PROJECTILES CREATED
 		self.missiles = []
+
+	def get_information(self):
+
+		return [
+			"Unit class: " + self.unit_class,
+			"Troops: " + str(self.unit_size),
+			"Ammunition: " + str(int(self.ranged_ammunition))
+		]
 
 	def seeking(self):
 
