@@ -22,14 +22,14 @@ unit_width = 31
 unit_height = 21
 unit_buffer = unit_height / 2
 
-total_player_units = 5
+total_player_units = 10
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
 player_increment = total_width / total_player_units
 
 player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 # player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
-player_units.extend([Unit(unit_info["England"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
+# player_units.extend([Unit(unit_info["England"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
 player_units.extend([Unit(unit_info["England"]["Hobilars"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(2)])
 
 total_enemy_units = 10

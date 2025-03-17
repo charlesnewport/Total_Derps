@@ -28,10 +28,17 @@ class Unit:
 		###MELEE
 		self.melee_attack_skill = unit_class["melee_weapon"]["attack_skill"]
 		self.melee_armour_piercing = unit_class["melee_weapon"]["armour_piercing"]
-		self.charge_bonus = unit_class["melee_weapon"]["charge_bonus"]
 
 		self.melee_cooldown_time = 4 * 60 #FPS
 		self.melee_cooldown_time_counter = random.randint(0, self.melee_cooldown_time)
+
+		####Charge Bonus
+		self.charge_bonus = unit_class["melee_weapon"]["charge_bonus"]
+
+		self.charge_bonus_total_time = 30 * 60
+		self.charge_bonus_timer = 0
+
+		self.was_colliding = False
 
 		###DEFENCE
 		self.defence_skill = unit_class["defence"]["defence_skill"]
@@ -45,11 +52,6 @@ class Unit:
 		##SPEEDS
 		self.walking_speed = 0.25
 		self.running_speed = 0.5
-
-		if self.unit_type == "cavalry":
-
-			self.walking_speed = 0.5
-			self.running_speed = 1
 
 		##SPEED BOOLEAN
 		self.is_running = False
@@ -96,55 +98,24 @@ class Unit:
 		#ID
 		self.unit_id = str(uuid.uuid4())
 
-
-	#Class Method Overwrites	
 	def __equal__(self, test):
 
 		return self.id == test.id
 
-	#Info
 	def get_information(self):
 
 		return [
 			self.unit_name,
 			"Unit class: " + self.unit_class,
 			"Troops: " + str(self.unit_size),
+			"Has Charge Bonus: " + str(self.has_charge_bonus())
 		]
 
-	#Manager Functionality
 	def cancel_orders(self):
 
 		self.reset_enemy()
 		self.reset_target()
 
-	#Position Calculations
-	def get_points(self):
-
-		combs = [(0.5, 0.5), (-0.5, 0.5), (-0.5, -0.5),  (0.5, -0.5)]
-
-		angles = []
-
-		for x, y in combs:
-
-			angles.append(math.atan2(self.unit_height * y, self.unit_width * x))
-
-		return [polar(self.x, self.y, self.unit_radius, theta + self.heading + math.pi/2) for theta in angles]
-
-	def get_lines(self):
-
-		lines = []
-
-		points = self.get_points()
-
-		for i in range(1, len(points)):
-
-			lines.append([points[i], points[i-1]])
-
-		lines.append((points[0], points[-1]))
-
-		return lines
-
-	#STATE 0 
 	def idle(self, enemy_units):
 
 		if len(self.targets) == 0:
@@ -157,7 +128,6 @@ class Unit:
 
 			self.STATE = 1
 
-	#STATE 1	
 	def movement(self):
 
 		#If it has arrived
@@ -177,6 +147,13 @@ class Unit:
 
 		self.move_to_target(self.targets[0][0], self.targets[0][1])
 
+	def seeking(self):
+
+		e_x = self.enemy_target.x
+		e_y = self.enemy_target.y
+
+		self.move_to_target(e_x, e_y)
+
 	def move_to_target(self, t_x, t_y):
 
 		angle_to_target = math.atan2(t_y - self.y, t_x - self.x)
@@ -188,21 +165,6 @@ class Unit:
 		self.x += x_speed
 		self.y += y_speed
 
-	#STATE 2
-	def seeking(self):
-
-		e_x = self.enemy_target.x
-		e_y = self.enemy_target.y
-
-		self.move_to_target(e_x, e_y)
-
-	#STATE 3
-	#Placeholder for Missile_Unit functionality
-	def attack(self):
-
-		pass
-
-	#TARGETING LOCATIONS
 	def set_target(self, target, target_heading, append=False):
 
 		if not append:
@@ -216,11 +178,10 @@ class Unit:
 			self.targets.append(target)
 			self.target_headings.append(target_heading)
 
-		#Overrides targeting of enemy
 		#Reset Enemy Unit
 		self.reset_enemy()
-
 		#Set STATE = 1 (Movement)
+
 		self.STATE = 1
 
 	def reset_target(self):
@@ -229,13 +190,27 @@ class Unit:
 		self.targets = []
 		self.target_headings = []
 
+		#TEMPORARY
 		#Set STATE = 0 (Idle)
 		self.STATE = 0
 
-	#Melee Combat	
+	def get_defenders(self):
+
+		return min(self.unit_size, 10)
+
+	def has_charge_bonus(self):
+
+		return self.is_running and self.was_colliding and self.charge_bonus_timer <= self.charge_bonus_total_time
+
 	def melee_attack(self, enemy_unit):
 
 		a = self.melee_attack_skill
+
+		#apply charge bonus
+		if self.has_charge_bonus():
+
+			a += self.charge_bonus
+
 		#apply directionality here (attacking from rear removes shield points)
 		d = enemy_unit.defence_skill + enemy_unit.armour + enemy_unit.shield
 
@@ -277,7 +252,13 @@ class Unit:
 
 		if len(enemies_collided_with) == 0:
 
+			#reset bonus timer
+			self.was_colliding = False
+			self.charge_bonus_timer = 0
+
 			return
+
+		self.was_colliding = True
 
 		#reset any movement targets
 		self.reset_enemy()
@@ -288,10 +269,6 @@ class Unit:
 			return
 
 		self.melee_attack(enemies_collided_with[0])
-
-	def get_defenders(self):
-
-		return min(self.unit_size, 10)
 
 	def resolve_skirmish(self, total_wins):
 
@@ -308,34 +285,18 @@ class Unit:
 
 		return self.melee_cooldown_time_counter >= self.melee_cooldown_time
 
-	#TARGETING ENEMIES
-	def set_enemy(self, enemy_unit, append = False):
+	def attack(self):
 
-		self.enemy_target = enemy_unit
-
-		#clears any movement targets
-		if not append:
-
-			self.reset_target()
-
-			self.STATE = 2
-
-	#DEPRICATED?
-	# def append_enemy(self, enemy_unit):
-
-	# 	self.enemy_target = enemy_unit
-
-	def reset_enemy(self):
-
-		self.enemy_target = None
-		#Return to idle
-		self.STATE = 0
+		pass
 
 	def update_alarms(self):
 
 		self.melee_cooldown_time_counter += 1
 
-	#Update
+		if self.was_colliding:
+
+			self.charge_bonus_timer += 1
+
 	def update(self, opposition_units):
 
 		self.update_alarms()
@@ -365,7 +326,52 @@ class Unit:
 
 			self.attack()
 
-	#DRAWING
+	def get_points(self):
+
+		combs = [(0.5, 0.5), (-0.5, 0.5), (-0.5, -0.5),  (0.5, -0.5)]
+
+		angles = []
+
+		for x, y in combs:
+
+			angles.append(math.atan2(self.unit_height * y, self.unit_width * x))
+
+		return [polar(self.x, self.y, self.unit_radius, theta + self.heading + math.pi/2) for theta in angles]
+
+	def get_lines(self):
+
+		lines = []
+
+		points = self.get_points()
+
+		for i in range(1, len(points)):
+
+			lines.append([points[i], points[i-1]])
+
+		lines.append((points[0], points[-1]))
+
+		return lines
+
+	def set_enemy(self, enemy_unit, append = False):
+
+		self.enemy_target = enemy_unit
+
+		#clears any movement targets
+		if not append:
+
+			self.reset_target()
+
+			self.STATE = 2
+
+	def append_enemy(self, enemy_unit):
+
+		self.enemy_target = enemy_unit
+
+	def reset_enemy(self):
+
+		self.enemy_target = None
+		self.STATE = 0
+
 	def draw_movement_lines(self, screen):
 
 		#if has enemy target
@@ -476,7 +482,25 @@ class Missile_Unit(Unit):
 			"Ammunition: " + str(int(self.ranged_ammunition))
 		]
 
-	#STATE 0
+	def seeking(self):
+
+		e_x = self.enemy_target.x
+		e_y = self.enemy_target.y
+
+		self.move_to_target(e_x, e_y)
+
+		if self.enemy_in_range():
+
+			self.STATE = 3
+
+	def can_missile_attack(self):
+
+		return self.ranged_cooldown_time_counter >= self.ranged_cooldown_time and self.ranged_ammunition > 0
+
+	def update_alarms(self):
+
+		self.melee_cooldown_time_counter += 1
+
 	#Overrides Idle from Parent
 	def idle(self, enemy_units):
 
@@ -513,28 +537,11 @@ class Missile_Unit(Unit):
 
 			self.set_enemy(min_unit, False)
 
-	#STATE 2
-	def seeking(self):
-
-		e_x = self.enemy_target.x
-		e_y = self.enemy_target.y
-
-		self.move_to_target(e_x, e_y)
-
-		if self.enemy_in_range():
-
-			self.STATE = 3
-
-	#STATE 3
-	#Overriden from the parent "Unit" class
-	def can_missile_attack(self):
-
-		return self.ranged_cooldown_time_counter >= self.ranged_cooldown_time and self.ranged_ammunition > 0
-
 	def enemy_in_range(self):
 
 		return distance(self.x, self.y, self.enemy_target.x, self.enemy_target.y) <= self.ranged_attack_range
 
+	#Overriden from the parent "Unit" class
 	def attack(self):
 
 		self.ranged_cooldown_time_counter += 1
@@ -594,12 +601,6 @@ class Missile_Unit(Unit):
 		#Reset to idle on going out of range
 		#is guardmode disabled, chase down.
 
-	#Update
-	def update_alarms(self):
-
-		self.melee_cooldown_time_counter += 1
-
-	#Draw
 	def draw_range_indicator(self, screen):
 
 		self.shooting_angle = math.radians(45)
