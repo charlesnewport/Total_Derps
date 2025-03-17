@@ -101,6 +101,29 @@ class Manager:
 
 			line_start_x, line_start_y = polar(self.x_1, self.y_1, line_length/2, line_angle - math.pi)
 
+			#new code here to allow for the units to stay in their current formation, but be moved based around their center point
+			x_s = []
+			y_s = []
+
+			highlighted_units = [unit for unit in units if unit.highlight]
+
+			for unit in highlighted_units:
+
+				x_s.append(unit.x)
+				y_s.append(unit.y)
+
+			center_x = int(sum(x_s)/len(x_s))
+			center_y = int(sum(y_s)/len(y_s))
+
+			x_offset = [center_x - unit.x  for unit in highlighted_units]
+			y_offset = [center_y - unit.y for unit in highlighted_units]
+
+			for index, unit in enumerate(highlighted_units):
+
+				unit.set_target((self.x_1 - x_offset[index], self.y_1 - y_offset[index]), unit.heading, append=(keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]))
+
+			return
+
 		increment = line_length / total_highlighted
 
 		points = []
@@ -193,7 +216,7 @@ class Manager:
 
 			for unit in units:
 				
-				unit.highlight = not (unit.unit_class == "Missile" or unit.unit_type.lower() == "cavalry")
+				unit.highlight = not (unit.unit_class == "Missile" or unit.unit_type == "cavalry")
 
 		#Select missiles
 		if (keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]) and keys[pygame.K_m]:
