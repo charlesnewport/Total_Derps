@@ -98,6 +98,10 @@ class Unit:
 		#ID
 		self.unit_id = str(uuid.uuid4())
 
+	def get_strength(self):
+
+		return self.unit_size * (self.melee_attack_skill + self.charge_bonus + self.defence_skill + self.shield + self.armour) + sum(self.hitpoints_array)
+
 	def __equal__(self, test):
 
 		return self.id == test.id
@@ -472,6 +476,16 @@ class Missile_Unit(Unit):
 
 		#PROJECTILES CREATED
 		self.missiles = []
+
+	def get_strength(self):
+
+		if self.ranged_ammunition > 0:
+
+			#could add rate of fire
+
+			return self.unit_size * (self.ranged_attack_skill + self.defence_skill + self.shield + self.armour) + sum(self.hitpoints_array)
+
+		return self.unit_size * (self.melee_attack_skill + self.charge_bonus + self.defence_skill + self.shield + self.armour) + sum(self.hitpoints_array)
 
 	def get_information(self):
 

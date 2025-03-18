@@ -8,6 +8,16 @@ import pygame
 import json
 import math
 
+def calc_strength(army):
+
+	total = 0
+
+	for unit in army:
+
+		total += unit.get_strength()
+
+	return total
+
 pygame.init()
 
 width = 720
@@ -40,6 +50,7 @@ enemy_increment = total_width / total_enemy_units
 # enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
+enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/8 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
 
 manager = Manager("Player")
 
@@ -220,6 +231,16 @@ while True:
 	text_height = text.get_height()
 
 	screen.blit(text, (0, 0))
+
+	player_strength = calc_strength(player_units)
+	enemy_strength = calc_strength(enemy_units)
+
+	rect_width = 100
+	rect_height = 25
+
+	pygame.draw.rect(screen, (0, 0, 255), (width - rect_width, 0, rect_width, rect_height))
+	pygame.draw.rect(screen, (255, 0, 0), (width - rect_width, 0, int(rect_width * player_strength / (player_strength + enemy_strength)), rect_height))
+
 
 	#Events
 	for event in pygame.event.get():
