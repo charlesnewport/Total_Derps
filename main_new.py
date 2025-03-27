@@ -238,9 +238,8 @@ while True:
 	rect_width = 100
 	rect_height = 25
 
-	pygame.draw.rect(screen, (0, 0, 255), (width - rect_width, 0, rect_width, rect_height))
-	pygame.draw.rect(screen, (255, 0, 0), (width - rect_width, 0, int(rect_width * player_strength / (player_strength + enemy_strength)), rect_height))
-
+	pygame.draw.rect(screen, (0, 0, 255), (width/2 - rect_width/2, 0, rect_width, rect_height))
+	pygame.draw.rect(screen, (255, 0, 0), (width/2 - rect_width/2, 0, int(rect_width * player_strength / (player_strength + enemy_strength)), rect_height))
 
 	#Events
 	for event in pygame.event.get():
