@@ -441,6 +441,10 @@ class Unit:
 
 			self.draw_movement_end(screen)
 
+		if self.enemy_target != None:
+			
+			pygame.draw.line(screen, (255, 0, 0), (self.x, self.y), (self.enemy_target.x, self.enemy_target.y))
+
 		#Rotate unit Image by unit Heading
 		temp_image = pygame.transform.rotate(self.image, math.degrees(-self.heading + math.pi))
 
@@ -468,7 +472,7 @@ class Missile_Unit(Unit):
 		#RANGED COOLDOWN
 		self.ranged_cooldown_time = 5 * 60 #FPS
 		# self.ranged_cooldown_time = 60 * 60 / self.rate_of_fire
-		self.ranged_cooldown_time_counter = random.randint(0, self.ranged_cooldown_time)
+		self.ranged_cooldown_time_counter = self.ranged_cooldown_time#random.randint(0, self.ranged_cooldown_time)
 
 		#SPECIFIC BEHAVIOUS
 		self.fire_at_will = True

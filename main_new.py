@@ -40,7 +40,7 @@ player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2
 # player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
 player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
 # player_units.extend([Unit(unit_info["England"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
-player_units.extend([Unit(unit_info["England"]["Hobilars"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(2)])
+player_units.extend([Unit(unit_info["England"]["Hobilars"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(5)])
 
 total_enemy_units = 10
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
@@ -48,19 +48,147 @@ enemy_increment = total_width / total_enemy_units
 
 # enemy_units = [Unit(unit_info["France"]["Dismounted Feudal Knights"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 # enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
-enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
-enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
-enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/8 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
+# enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
+enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/8 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
 
 manager = Manager("Player")
 
 missiles = []
 
 #Temp
-for index, e in enumerate(enemy_units):
+temp_enemy_targets = [unit for unit in player_units if unit.unit_type == "archer"]
 
-	e.set_enemy(player_units[random.randint(0, len(player_units)-1)], False)
+#Find the closest unit to this
+for unit in enemy_units:
 
+	if unit.enemy_target != None:
+
+		continue
+
+	min_angle = float("inf")
+	min_target = None
+
+	for target in temp_enemy_targets:
+
+		# a = math.atan2(target.y - unit.y, target.x - unit.x)
+		a = math.atan2(unit.y - target.y, unit.x - target.x)
+		a %= math.pi * 2
+
+		if a + math.pi < min_angle:
+
+			min_angle = a
+			min_target = target
+
+	unit.set_enemy(min_target, False)
+
+	temp_enemy_targets.remove(min_target)
+
+# for index, e in enumerate(enemy_units):
+
+# 	e.set_enemy(player_units[random.randint(0, len(player_units)-1)], False)
+
+def set_basic_formation(army, top=False):
+
+	#determine max possible width of the army
+	max_width = int(width / (army[0].unit_width + unit_buffer))
+
+	#calculate total infantry
+	total_infantry = sum([1 for unit in army if unit.unit_type != "cavalry" and unit.unit_type != "archer" and unit.unit_type != "crossbow"])
+
+	center_x = width / 2
+	temp_y = 5 * width / 6 if not top else width / 6
+
+	total_infantry_width = (total_infantry * army[0].unit_width) + ((total_infantry - 1) * unit_buffer)
+
+	infantry_count = 0
+
+	for unit in army:
+
+		if unit.unit_type != "cavalry" and unit.unit_type != "archer" and unit.unit_type != "crossbow":
+
+			temp_unit_x = center_x - (total_infantry_width / 2) + (infantry_count * (unit_width + unit_buffer)) + army[0].unit_width/2
+			infantry_count += 1
+
+			unit.x = temp_unit_x
+
+			unit.y = temp_y
+
+	total_missile = sum([1 for unit in army if unit.unit_type == "archer" or unit.unit_type == "crossbow"])
+
+	total_missile_width = (total_missile * army[0].unit_width) + ((total_missile - 1) * unit_buffer)
+
+	missile_count = 0
+
+	for unit in army:
+
+		if unit.unit_type == "archer" or unit.unit_type == "crossbow":
+
+			temp_unit_x = center_x - total_missile_width / 2 + (missile_count * (army[0].unit_width + unit_buffer)) + army[0].unit_width/2
+			missile_count += 1
+
+			unit.x = temp_unit_x
+
+			unit.y = temp_y - unit.unit_height - unit_buffer if not top else temp_y + unit.unit_height + unit_buffer
+
+	total_cavalry = sum([1 for unit in army if unit.unit_type == "cavalry"])
+
+	#find half of the cavalry
+	half_cavalry = math.floor(total_cavalry / 2)
+
+	#LHS
+	lhs_width = (half_cavalry * army[0].unit_width) + ((half_cavalry - 1) * unit_buffer)
+
+	lhs_end = int(center_x - max(total_infantry_width, total_missile_width) / 2)
+
+	lhs_center_x = lhs_end / 2
+
+	lhs_cavalry_counter = 0
+
+	for unit in army:
+
+		if lhs_cavalry_counter == half_cavalry:
+
+			break
+
+		if unit.unit_type == "cavalry":
+
+			temp_x = lhs_center_x - lhs_width / 2 + (lhs_cavalry_counter * (army[0].unit_width + unit_buffer)) + army[0].unit_width/2
+
+			unit.x = temp_x
+			unit.y = int(temp_y + army[0].unit_height / 2) if not top else int(temp_y - army[0].unit_height / 2)
+
+			lhs_cavalry_counter += 1
+
+	#RHS
+	rhs_width = ((total_cavalry - half_cavalry) * army[0].unit_width) + (((total_cavalry - half_cavalry) - 1) * unit_buffer)
+	rhs_end = int(center_x + max(total_infantry_width, total_missile_width) / 2)
+
+	rhs_center_x = int((width + rhs_end) / 2)
+
+	print(rhs_end)
+
+	rhs_cavalry_counter = 0
+	rhs_buffer_counter = 0
+
+	for unit in army:
+
+		if unit.unit_type == "cavalry":
+
+			if rhs_buffer_counter < half_cavalry:
+				rhs_buffer_counter += 1
+				continue
+
+			temp_x = rhs_center_x - rhs_width / 2 + (rhs_cavalry_counter * (army[0].unit_width + unit_buffer)) + army[0].unit_width/2
+			unit.x = temp_x
+			# unit.y = int(temp_y + army[0].unit_height / 2)
+			unit.y = int(temp_y + army[0].unit_height / 2) if not top else int(temp_y - army[0].unit_height / 2)
+
+			rhs_cavalry_counter += 1
+
+set_basic_formation(player_units)
+set_basic_formation(enemy_units, True)
 #FONT
 font_size = 15
 font = pygame.font.SysFont("Minecraft", font_size)
