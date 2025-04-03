@@ -164,8 +164,19 @@ def draw_info_card(screen, font, x, y, information):
 
 		text_y += t.get_height() + line_buffer
 
-	# text = font.render(str(a) + " - " + str(d), False, (0, 0, 255) if d > a else (255, 0, 0))
-	# text_width = text.get_width()
-	# text_height = text.get_height()
+def line_line_intersection(x1, y1, x2, y2, x3, y3, x4, y4):
 
-	# screen.blit(text, (0, 0))
+	uA = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
+	uB = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / ((y4-y3)*(x2-x1) - (x4-x3)*(y2-y1))
+
+	return (uA >= 0 and uA <= 1 and uB >= 0 and uB <= 1)
+
+def get_front_line(x, y, width, height, radius, heading):
+
+	angle_to_tl = math.atan2(height * -0.5, width * -0.5)
+	tl_x, tl_y = polar(x, y, radius, angle_to_tl + heading + math.pi/2)
+
+	angle_to_tr = math.atan2(height * -0.5, width * 0.5)
+	tr_x, tr_y = polar(x, y, radius, angle_to_tr + heading + math.pi/2)
+
+	return tl_x, tl_y, tr_x, tr_y

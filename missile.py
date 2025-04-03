@@ -11,6 +11,9 @@ class Missile:
 		self.x = x
 		self.y = y
 
+		self.prev_x = x
+		self.prev_y = y
+
 		self.t_x = t_x
 		self.t_y = t_y
 
@@ -46,6 +49,9 @@ class Missile:
 	def update(self):
 
 		x_speed, y_speed = polar(0, 0, self.speed, self.heading)
+
+		self.prev_x = self.x
+		self.prev_y = self.y
 
 		self.x += x_speed
 		self.y += y_speed

@@ -562,7 +562,11 @@ class Missile_Unit(Unit):
 	#Overriden from the parent "Unit" class
 	def attack(self):
 
-		self.ranged_cooldown_time_counter += 1
+		#only update the counter if all missiles are expended
+		#UPDATE could only update if not moving
+
+		if len(self.missiles) == 0:
+			self.ranged_cooldown_time_counter += 1
 
 		#check enemy in range
 		if not self.enemy_in_range():

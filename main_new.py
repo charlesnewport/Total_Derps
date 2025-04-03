@@ -1,4 +1,4 @@
-from utils import distance, point_in_unit, polar, draw_info_card
+from utils import distance, point_in_unit, polar, draw_info_card, line_line_intersection, get_front_line
 from unit_new import Unit, Missile_Unit
 from army_manager import Manager
 
@@ -36,11 +36,13 @@ total_player_units = 10
 total_width = (total_player_units * unit_width) + ((total_player_units - 1) * unit_buffer)
 player_increment = total_width / total_player_units
 
-player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
-# player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
-player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
-# player_units.extend([Unit(unit_info["England"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
-player_units.extend([Unit(unit_info["England"]["Hobilars"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(5)])
+# player_units = [Unit(unit_info["England"]["Dismounted English Knights"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+# # player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)]
+# player_units.extend([Missile_Unit(unit_info["England"]["Yeoman Archers"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
+# # player_units.extend([Unit(unit_info["England"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(total_player_units)])
+# player_units.extend([Unit(unit_info["England"]["Hobilars"], width/2 - total_width/2 + unit_width/2 + (player_increment * i), 3*width/4, unit_width, unit_height, [255, 0, 0]) for i in range(5)])
+
+player_units = [Missile_Unit(unit_info["England"]["Yeoman Archers"], width/4, 3*width/4, unit_width, unit_height, [255, 0, 0]), Missile_Unit(unit_info["England"]["Yeoman Archers"], 3*width/4, 3*width/4, unit_width, unit_height, [255, 0, 0])]
 
 total_enemy_units = 10
 total_width = (total_enemy_units * unit_width) + ((total_enemy_units - 1) * unit_buffer)
@@ -50,8 +52,9 @@ enemy_increment = total_width / total_enemy_units
 # enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 # enemy_units = [Missile_Unit(unit_info["France"]["Crossbowmen"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 # enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
-enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
+# enemy_units = [Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/4 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)]
 # enemy_units.extend([Unit(unit_info["France"]["Peasants"], width/2 - total_width/2 + unit_width/2 + (enemy_increment * i), width/8 - 3 * unit_height * 2, unit_width, unit_height, [0, 0, 255]) for i in range(total_enemy_units)])
+enemy_units = [Unit(unit_info["France"]["Peasants"], width/4, width/4, unit_width, unit_height, [0, 0, 255]), Unit(unit_info["France"]["Peasants"], 3*width/4, width/4, unit_width, unit_height, [0, 0, 255])]
 
 manager = Manager("Player")
 
@@ -61,29 +64,29 @@ missiles = []
 temp_enemy_targets = [unit for unit in player_units if unit.unit_type == "archer"]
 
 #Find the closest unit to this
-for unit in enemy_units:
+# for unit in enemy_units:
 
-	if unit.enemy_target != None:
+# 	if unit.enemy_target != None:
 
-		continue
+# 		continue
 
-	min_angle = float("inf")
-	min_target = None
+# 	min_angle = float("inf")
+# 	min_target = None
 
-	for target in temp_enemy_targets:
+# 	for target in temp_enemy_targets:
 
-		# a = math.atan2(target.y - unit.y, target.x - unit.x)
-		a = math.atan2(unit.y - target.y, unit.x - target.x)
-		a %= math.pi * 2
+# 		# a = math.atan2(target.y - unit.y, target.x - unit.x)
+# 		a = math.atan2(unit.y - target.y, unit.x - target.x)
+# 		a %= math.pi * 2
 
-		if a + math.pi < min_angle:
+# 		if a + math.pi < min_angle:
 
-			min_angle = a
-			min_target = target
+# 			min_angle = a
+# 			min_target = target
 
-	unit.set_enemy(min_target, False)
+# 	unit.set_enemy(min_target, False)
 
-	temp_enemy_targets.remove(min_target)
+# 	temp_enemy_targets.remove(min_target)
 
 # for index, e in enumerate(enemy_units):
 
@@ -187,8 +190,10 @@ def set_basic_formation(army, top=False):
 
 			rhs_cavalry_counter += 1
 
-set_basic_formation(player_units)
-set_basic_formation(enemy_units, True)
+enemy_units[-1].heading = enemy_units[-1].heading + math.pi
+
+# set_basic_formation(player_units)
+# set_basic_formation(enemy_units, True)
 #FONT
 font_size = 15
 font = pygame.font.SysFont("Minecraft", font_size)
@@ -274,6 +279,12 @@ while True:
 						#resolve arrow collision
 						a = missiles[i].missile_attack_skill
 						d = unit.defence_skill + unit.armour + unit.shield
+
+						#make a line from previous x to current x
+						f_l_x, f_l_y, f_r_x, f_r_y = get_front_line(x, y, unit.unit_width, unit.unit_height, unit.unit_radius, unit.heading)
+						if not line_line_intersection(missiles[i].x, missiles[i].y, missiles[i].prev_x, missiles[i].prev_y, f_l_x, f_l_y, f_r_x, f_r_y):
+
+							d -= unit.shield
 
 						if missiles[i].is_armour_piercing:
 
